@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import com.example.a82173.friendcircle.MainActivity;
 import com.example.a82173.friendcircle.R;
 import com.example.a82173.friendcircle.customerwidget.AutoWrapLineLayout;
 import com.example.a82173.friendcircle.databean.ComentData;
@@ -30,7 +31,6 @@ import com.example.a82173.friendcircle.popup.TitlePopup;
  * Created by SunFly on 2016/10/27.
  */
 public class ListViewAdapter extends BaseAdapter {
-    private TitlePopup titlePopup;
     private Context context;
     private List<ContentData> datas;
 
@@ -79,6 +79,8 @@ public class ListViewAdapter extends BaseAdapter {
                 if(finalHolder.likeOrComent.getVisibility()== View.VISIBLE)
                     finalHolder.likeOrComent.setVisibility(View.GONE);
                 else{
+                    MainActivity.titlePopup.setAnimationStyle(R.style.cricleBottomAnimation);
+                    MainActivity.titlePopup.show(v);
                     AutoWrapLineLayout like = (AutoWrapLineLayout) finalHolder.likeOrComent.findViewById(R.id.like);
                     like.setFillMode(AutoWrapLineLayout.MODE_WRAP_CONTENT);
                     View likeItem = LayoutInflater.from(context).inflate(R.layout.like, null);

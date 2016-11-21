@@ -42,7 +42,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TitlePopup.OnItemOnClickListener {
     private ListView mylist;
-    private TitlePopup titlePopup;
+    static public TitlePopup titlePopup;
     private TextView thumbUp;
     private EditText Msg;
     private LinearLayout mAmLlLiuyan;
@@ -70,13 +70,13 @@ public class MainActivity extends AppCompatActivity implements TitlePopup.OnItem
         init();
         initData();
 
-//        titlePopup = new TitlePopup(this, Util.dip2px(this, 165), Util.dip2px(
-//                this, 40));
-//        titlePopup
-//                .addAction(new ActionItem(this, "赞", R.drawable.circle_praise));
-//        titlePopup.addAction(new ActionItem(this, "评论",
-//                R.drawable.circle_comment));
-//        titlePopup.setItemOnClickListener(this);
+        titlePopup = new TitlePopup(this, Util.dip2px(this, 165), Util.dip2px(
+                this, 40));
+        titlePopup
+                .addAction(new ActionItem(this, "赞", R.drawable.circle_praise));
+        titlePopup
+                .addAction(new ActionItem(this, "评论", R.drawable.circle_comment));
+        titlePopup.setItemOnClickListener(this);
     }
     //根据menu创建ActionBar选项
     public boolean onCreateOptionsMenu(Menu menu) {
