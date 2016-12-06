@@ -2,6 +2,8 @@ package com.example.a82173.friendcircle;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,15 +34,20 @@ import com.example.a82173.friendcircle.databean.ComentData;
 import com.example.a82173.friendcircle.databean.ContentData;
 import com.example.a82173.friendcircle.databean.LikeData;
 import com.example.a82173.friendcircle.databean.LinkData;
+import com.example.a82173.friendcircle.json.HttpHandler;
 import com.example.a82173.friendcircle.popup.ActionItem;
 import com.example.a82173.friendcircle.popup.TitlePopup;
 import com.example.a82173.friendcircle.popup.Util;
+import com.example.a82173.friendcircle.sqlite.UserDBHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements TitlePopup.OnItemOnClickListener {
+import static com.example.a82173.friendcircle.json.TestJson.testJson;
+
+
+public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickListener {
     private ListView mylist;
     static public TitlePopup titlePopup;
     private TextView thumbUp;
@@ -51,6 +58,8 @@ public class MainActivity extends AppCompatActivity implements TitlePopup.OnItem
     private View headView;
     private List data=new ArrayList();
     private ContentData[] contentDatas;
+    public static UserDBHelper dbHelper;
+    public static SQLiteDatabase db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +75,12 @@ public class MainActivity extends AppCompatActivity implements TitlePopup.OnItem
                 saveComment();
             }
         });
-
+        dbHelper = new UserDBHelper(MainActivity.this,"user_db",null,1);
+        db =dbHelper.getReadableDatabase();
+//        String str = testJson(this);
+        HttpHandler httpHandler = new HttpHandler();
+        httpHandler.SetHttpJson();
+        savesql();
         init();
         initData();
 
@@ -174,137 +188,84 @@ public class MainActivity extends AppCompatActivity implements TitlePopup.OnItem
         listView.addHeaderView(headView, null, false);
         listView.setAdapter(adapter);
 
-        ContentData contentData = new ContentData("测试1","内容测试，夕阳西下，断桥残雪");
-        List images = new ArrayList();
-        images.add(R.drawable.header);
-        images.add(R.drawable.header);
-        images.add(R.drawable.header);
-        images.add(R.drawable.header);
-        images.add(R.drawable.header);
-        ContentData imagesData = new ContentData(images,"测试2","多图测试");
-        List image = new ArrayList();
-        image.add(R.drawable.headerbg);
-        ContentData imageData = new ContentData(image,"测试3","单图测试");
-        ContentData linkData = new ContentData("测试4","链接测试：https://www.baidu.com",new LinkData("https://www.baidu.com",R.drawable.header,"作为一个连接标题，我也是有个性的"));
-        ContentData likeData = new ContentData("测试5","点赞测试");
-        List likeDatas = new ArrayList();
-        likeDatas.add(new LikeData("测试1"));
-        likeDatas.add(new LikeData("测试2"));
-        likeDatas.add(new LikeData("测试3"));
-        likeDatas.add(new LikeData("测试4"));
-        likeData.setLikeData(likeDatas);
+        Cursor cursor =db.rawQuery("select * from friendcircle",null);
+        int i = 0;
+        contentDatas = new ContentData[7];
+        while (cursor.moveToNext()) {
+            if (cursor.getString(cursor.getColumnIndex("megimage1"))==null)
+            {
+                ContentData contentData = new ContentData("测试1",cursor.getString(cursor.getColumnIndex("megstring")));
+                contentDatas[i] = contentData;
+            }
+            else if (cursor.getString(cursor.getColumnIndex("megimage2"))==null)
+            {
 
-        ContentData comentData = new ContentData("测试6","评论测试");
-        List comentDatas = new ArrayList();
-        comentDatas .add(new ComentData("测试1", "你这个是错误的答案", "测试2"));
-        comentDatas .add(new ComentData("测试2", "我这个是正确的答案", "测试1"));
-        comentDatas .add(new ComentData("测试3", "静静的看楼上在装", null));
-        comentDatas .add(new ComentData("测试4", "+1", null));
-        comentData.setComentDatas(comentDatas);
-        comentData.setLikeData(likeDatas);
-        contentDatas = new ContentData[]{contentData,imagesData,imageData,linkData,likeData,comentData};
+                List image = new ArrayList();
+                image.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
+                ContentData imageData = new ContentData(image,"测试3",cursor.getString(cursor.getColumnIndex("megstring")));
+                contentDatas[i] = imageData;
+            }else {
+                List images = new ArrayList();
+                images.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
+                images.add(cursor.getInt(cursor.getColumnIndex("megimage"+2)));
+                int num = 3;
+                while (true){
+                    if (cursor.getString(cursor.getColumnIndex("megimage"+num))==null)
+                    {
+                        break;
+                    }
+                    images.add(cursor.getInt(cursor.getColumnIndex("megimage"+num)));
+                    num++;
+                }
+                ContentData imageData = new ContentData(images,"测试3",cursor.getString(cursor.getColumnIndex("megstring")));
+                contentDatas[i] = imageData;
+            }
+            i++;
+        }
+        cursor.close();
+
+//        ContentData contentData = new ContentData("测试1","内容测试，夕阳西下，断桥残雪");
+//        List images = new ArrayList();
+//        images.add(R.drawable.header);
+//        images.add(R.drawable.header);
+//        images.add(R.drawable.header);
+//        images.add(R.drawable.header);
+//        images.add(R.drawable.header);
+//        ContentData imagesData = new ContentData(images,"测试2","多图测试");
+//        List image = new ArrayList();
+//        image.add(R.drawable.headerbg);
+//        ContentData imageData = new ContentData(image,"测试3","单图测试");
+//        ContentData linkData = new ContentData("测试4","链接测试：https://www.baidu.com",new LinkData("https://www.baidu.com",R.drawable.header,"作为一个连接标题，我也是有个性的"));
+//        ContentData likeData = new ContentData("测试5","点赞测试");
+//        List likeDatas = new ArrayList();
+//        likeDatas.add(new LikeData("测试1"));
+//        likeDatas.add(new LikeData("测试2"));
+//        likeDatas.add(new LikeData("测试3"));
+//        likeDatas.add(new LikeData("测试4"));
+//        likeData.setLikeData(likeDatas);
+//
+//        ContentData comentData = new ContentData("测试6","评论测试");
+//        List comentDatas = new ArrayList();
+//        comentDatas .add(new ComentData("测试1", "你这个是错误的答案", "测试2"));
+//        comentDatas .add(new ComentData("测试2", "我这个是正确的答案", "测试1"));
+//        comentDatas .add(new ComentData("测试3", "静静的看楼上在装", null));
+//        comentDatas .add(new ComentData("测试4", "+1", null));
+//        comentData.setComentDatas(comentDatas);
+//        comentData.setLikeData(likeDatas);
+//        contentDatas = new ContentData[]{contentData,imagesData,imageData,linkData,likeData,comentData};
     }
 
     private void initData(){
         //Random random = new Random();
-        for(int i= 0;i<6;i++){
+        for(int i= 0;i<contentDatas.length;i++){
             data.add(contentDatas[i]);
         }
         adapter.notifyDataSetChanged();
     }
 
-    //Adapter的构件
-//    public class MyListViewAdapter extends BaseAdapter {
-//        private static final int LIST1 = 1;
-//        private static final int LIST2 = 2;
-//        private static final int LIST3 = 3;
-//        LayoutInflater inflater;
-//        Context mContext;
-//
-//        public MyListViewAdapter(Context context) {
-//            mContext = context;
-//            inflater = LayoutInflater.from(mContext);
-//        }
-//        //有几个Item
-//        public int getCount() {
-//            return 3;
-//        }
-//        @Override
-//        public Object getItem(int position) {
-//            return null;
-//        }
-//
-//        @Override
-//        public long getItemId(int position) {
-//            return position;
-//        }
-//
-//        public int getItemViewType(int position) {
-//            int p = position;
-//            if (p == 0)
-//                return LIST1;
-//            else if(p == 1)
-//                return LIST2;
-//            else
-//                return LIST3;
-//        }
-//
-//        @Override
-//        //界面的构造
-//        public View getView(int position, View convertView, ViewGroup parent) {
-//            final ViewHolder1 v1 = new ViewHolder1();
-//            final ViewHolder1 v2 = new ViewHolder1();
-//            final View myView;
-//            int type = getItemViewType(position);
-//            if(convertView == null) {
-//                switch (type) {
-//                    case LIST1:
-//                        convertView = inflater.inflate(R.layout.test_2,
-//                                parent, false);
-//                        break;
-//                    case LIST2:
-//                        convertView = inflater.inflate(R.layout.test_4,
-//                                parent, false);
-//                        myView =  convertView;
-//                        v1.btn1 = (ImageButton) convertView.findViewById(R.id.TestButton1);
-//                        v1.thumbUp = (TextView) convertView.findViewById(R.id.thumbUp);
-//                        v1.btn1.setOnClickListener(new OnClickListener() {
-//                            @Override
-//                            public void onClick(View view) {
-//                                titlePopup.setAnimationStyle(R.style.cricleBottomAnimation);
-//                                //当前被点击的item的点赞框
-//                                titlePopup.SetThumbUp(v1.thumbUp);
-//                                //保存被点击的View
-//                                titlePopup.SetView(myView);
-//                                titlePopup.show(view);
-//                            }
-//                        });
-//                        break;
-//                    case LIST3:
-//                        convertView = inflater.inflate(R.layout.test_3,
-//                                parent, false);
-//                        v2.btn1 = (ImageButton) convertView.findViewById(R.id.TestButton1);
-//                        v2.thumbUp = (TextView) convertView.findViewById(R.id.thumbUp);
-//                        myView =  convertView;
-//                        v2.btn1.setOnClickListener(new OnClickListener() {
-//                            @Override
-//                            public void onClick(View view) {
-//                                titlePopup.setAnimationStyle(R.style.cricleBottomAnimation);
-//                                titlePopup.SetThumbUp(v2.thumbUp);
-//                                titlePopup.SetView(myView);
-//                                titlePopup.show(view);
-//                            }
-//                        });
-//                        break;
-//                }
-//            }
-//            return convertView;
-//        }
-//        class ViewHolder1 {
-//            ImageView image;
-//            TextView thumbUp;
-//            ImageButton btn1;
-//            ImageButton btn2;
-//        }
-//    }
+    private void savesql(){
+        int i = R.drawable.header;
+//        String sql = "insert into user(username,userimage) values('DeathBefall',2130837616)";
+//        db.execSQL(sql);
+    }
 }

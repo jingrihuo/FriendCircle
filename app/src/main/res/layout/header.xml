@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         android:id="@+id/headerbg"
         android:layout_gravity="center"
-        android:src="@drawable/headerbg"
+        android:src="@drawable/bg_personal2"
         android:scaleType="centerCrop"
         android:layout_marginBottom="15dp" />
 
@@ -21,7 +21,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="夕阳西下"
+            android:text="DeathBefall"
             android:id="@+id/textView"
             android:layout_gravity="right|bottom"
             android:layout_marginBottom="15dp"
@@ -35,7 +35,7 @@
             android:layout_height="80dp"
             android:id="@+id/header"
             android:layout_gravity="right|bottom"
-            android:src="@drawable/header"
+            android:src="@drawable/img_touxiang"
             android:layout_marginRight="15dp"
             android:background="#ffffff"
             android:padding="3dp" />

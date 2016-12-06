@@ -10,7 +10,7 @@
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:id="@+id/header"
-        android:src="@drawable/header" />
+        android:src="@drawable/img_touxiang" />
 
     <LinearLayout
         android:orientation="vertical"

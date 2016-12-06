@@ -18,7 +18,7 @@
         android:text="评论"
         android:textColor="#ffffffff"
         android:textSize="16sp" />
-    
+
      <View
         android:layout_width="0.5dp"
         android:layout_height="match_parent"
