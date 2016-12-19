@@ -19,15 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
+
 
 import com.example.a82173.friendcircle.adapter.ListViewAdapter;
 import com.example.a82173.friendcircle.databean.ComentData;
@@ -39,6 +32,9 @@ import com.example.a82173.friendcircle.popup.ActionItem;
 import com.example.a82173.friendcircle.popup.TitlePopup;
 import com.example.a82173.friendcircle.popup.Util;
 import com.example.a82173.friendcircle.sqlite.UserDBHelper;
+import com.example.a82173.friendcircle.view.EyeView;
+import com.example.a82173.friendcircle.view.PullDownListView;
+import com.example.a82173.friendcircle.view.YProgressView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +43,7 @@ import java.util.List;
 import static com.example.a82173.friendcircle.json.TestJson.testJson;
 
 
-public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickListener {
-    private ListView mylist;
+public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickListener{
     static public TitlePopup titlePopup;
     private TextView thumbUp;
     private EditText Msg;
@@ -60,21 +55,37 @@ public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickL
     private ContentData[] contentDatas;
     public static UserDBHelper dbHelper;
     public static SQLiteDatabase db;
+    Context mContext;
+    PullDownListView pullDownListView;
+    YProgressView progressView;
+    EyeView eyeView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
+        mContext = this;
+        pullDownListView = (PullDownListView) this
+                .findViewById(R.id.pullDownListView);
+        progressView = (YProgressView) this
+                .findViewById(R.id.progressView);
+        eyeView = (EyeView) this.findViewById(R.id.eyeView);
+
+        for(int i= 0;i<contentDatas.length;i++){
+            data.add(contentDatas[i]);
+        }
+        adapter.notifyDataSetChanged();
+
         Msg = (EditText) findViewById(R.id.et_msg);
-        mylist = (ListView) findViewById(R.id.listView);
         mAmLlLiuyan = (LinearLayout) findViewById(R.id.pinglun);
         //点击回复触发回复功能
-        Button huifu = (Button) findViewById(R.id.btn_save);
-        huifu.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                saveComment();
-            }
-        });
+//        Button huifu = (Button) findViewById(R.id.btn_save);
+//        huifu.setOnClickListener(new OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                saveComment();
+//            }
+//        });
         dbHelper = new UserDBHelper(MainActivity.this,"user_db",null,1);
         db =dbHelper.getReadableDatabase();
 //        String str = testJson(this);
@@ -84,6 +95,83 @@ public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickL
         init();
         initData();
 
+
+        pullDownListView.setOnPullHeightChangeListener(new PullDownListView.OnPullHeightChangeListener(){
+
+            @Override
+            public void onTopHeightChange(int headerHeight,
+                                          int pullHeight) {
+                // TODO Auto-generated method stub
+                float progress = (float) pullHeight
+                        / (float) headerHeight;
+
+                if(progress<0.5){
+                    progress = 0.0f;
+                }else{
+                    progress = (progress-0.5f)/0.5f;
+                }
+
+
+                if (progress > 1.0f) {
+                    progress = 1.0f;
+                }
+
+                if (!pullDownListView.isRefreshing()) {
+                    eyeView.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onBottomHeightChange(int footerHeight,
+                                             int pullHeight) {
+                // TODO Auto-generated method stub
+                float progress = (float) pullHeight
+                        / (float) footerHeight;
+
+                if(progress<0.5){
+                    progress = 0.0f;
+                }else{
+                    progress = (progress-0.5f)/0.5f;
+                }
+
+                if (progress > 1.0f) {
+                    progress = 1.0f;
+                }
+
+                if (!pullDownListView.isRefreshing()) {
+                    progressView.setProgress(progress);
+                }
+
+            }
+
+            @Override
+            public void onRefreshing(final boolean isTop) {
+                // TODO Auto-generated method stub
+                if (isTop) {
+                    eyeView.startAnimate();
+                } else {
+                    progressView.startAnimate();
+                }
+
+                new Handler().postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        // TODO Auto-generated method stub
+                        pullDownListView.pullUp();
+                        if (isTop) {
+                            eyeView.stopAnimate();
+                            initData();
+                        } else {
+                            progressView.stopAnimate();
+                            initData();
+                        }
+                    }
+
+                }, 3000);
+            }
+
+        });
         titlePopup = new TitlePopup(this, Util.dip2px(this, 165), Util.dip2px(
                 this, 40));
         titlePopup
@@ -124,7 +212,7 @@ public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickL
                 mAmLlLiuyan.setVisibility(View.VISIBLE);
                 View listItem = titlePopup.GetView();
                 int Y = listItem.getMeasuredHeight();
-                mylist.setSelection(Y);
+                listView.setSelection(Y);
                 onFocusChange(true);
                 break;
             case 0:
@@ -181,84 +269,86 @@ public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickL
         }, 100);
     }
     private void init(){
-        setContentView(R.layout.activity_test);
+//        setContentView(R.layout.activity_test2);
         adapter = new ListViewAdapter(this,data);
         headView = LayoutInflater.from(this).inflate(R.layout.header, null);
-        listView = (ListView) findViewById(R.id.listView);
+        listView = (ListView)pullDownListView.getListView();
         listView.addHeaderView(headView, null, false);
         listView.setAdapter(adapter);
+        ContentData contentData = new ContentData("测试1","内容测试，夕阳西下，断桥残雪");
+        List images = new ArrayList();
+        images.add(R.drawable.header);
+        images.add(R.drawable.header);
+        images.add(R.drawable.header);
+        images.add(R.drawable.header);
+        images.add(R.drawable.header);
+        ContentData imagesData = new ContentData(images,"测试2","多图测试");
+        List image = new ArrayList();
+        image.add(R.drawable.headerbg);
+        ContentData imageData = new ContentData(image,"测试3","单图测试");
+        ContentData linkData = new ContentData("测试4","链接测试：https://www.baidu.com",new LinkData("https://www.baidu.com",R.drawable.header,"作为一个连接标题，我也是有个性的"));
+        ContentData likeData = new ContentData("测试5","点赞测试");
+        List likeDatas = new ArrayList();
+        likeDatas.add(new LikeData("测试1"));
+        likeDatas.add(new LikeData("测试2"));
+        likeDatas.add(new LikeData("测试3"));
+        likeDatas.add(new LikeData("测试4"));
+        likeData.setLikeData(likeDatas);
 
-        Cursor cursor =db.rawQuery("select * from friendcircle",null);
-        int i = 0;
-        contentDatas = new ContentData[7];
-        while (cursor.moveToNext()) {
-            if (cursor.getString(cursor.getColumnIndex("megimage1"))==null)
-            {
-                ContentData contentData = new ContentData("测试1",cursor.getString(cursor.getColumnIndex("megstring")));
-                contentDatas[i] = contentData;
-            }
-            else if (cursor.getString(cursor.getColumnIndex("megimage2"))==null)
-            {
+        ContentData comentData = new ContentData("测试6","评论测试");
+        List comentDatas = new ArrayList();
+        comentDatas .add(new ComentData("测试1", "你这个是错误的答案", "测试2"));
+        comentDatas .add(new ComentData("测试2", "我这个是正确的答案", "测试1"));
+        comentDatas .add(new ComentData("测试3", "静静的看楼上在装", null));
+        comentDatas .add(new ComentData("测试4", "+1", null));
+        comentData.setComentDatas(comentDatas);
+        comentData.setLikeData(likeDatas);
+        contentDatas = new ContentData[]{contentData,imagesData,imageData,linkData,likeData,comentData};
 
-                List image = new ArrayList();
-                image.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
-                ContentData imageData = new ContentData(image,"测试3",cursor.getString(cursor.getColumnIndex("megstring")));
-                contentDatas[i] = imageData;
-            }else {
-                List images = new ArrayList();
-                images.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
-                images.add(cursor.getInt(cursor.getColumnIndex("megimage"+2)));
-                int num = 3;
-                while (true){
-                    if (cursor.getString(cursor.getColumnIndex("megimage"+num))==null)
-                    {
-                        break;
-                    }
-                    images.add(cursor.getInt(cursor.getColumnIndex("megimage"+num)));
-                    num++;
-                }
-                ContentData imageData = new ContentData(images,"测试3",cursor.getString(cursor.getColumnIndex("megstring")));
-                contentDatas[i] = imageData;
-            }
-            i++;
-        }
-        cursor.close();
 
-//        ContentData contentData = new ContentData("测试1","内容测试，夕阳西下，断桥残雪");
-//        List images = new ArrayList();
-//        images.add(R.drawable.header);
-//        images.add(R.drawable.header);
-//        images.add(R.drawable.header);
-//        images.add(R.drawable.header);
-//        images.add(R.drawable.header);
-//        ContentData imagesData = new ContentData(images,"测试2","多图测试");
-//        List image = new ArrayList();
-//        image.add(R.drawable.headerbg);
-//        ContentData imageData = new ContentData(image,"测试3","单图测试");
-//        ContentData linkData = new ContentData("测试4","链接测试：https://www.baidu.com",new LinkData("https://www.baidu.com",R.drawable.header,"作为一个连接标题，我也是有个性的"));
-//        ContentData likeData = new ContentData("测试5","点赞测试");
-//        List likeDatas = new ArrayList();
-//        likeDatas.add(new LikeData("测试1"));
-//        likeDatas.add(new LikeData("测试2"));
-//        likeDatas.add(new LikeData("测试3"));
-//        likeDatas.add(new LikeData("测试4"));
-//        likeData.setLikeData(likeDatas);
+//        Cursor cursor =db.rawQuery("select * from friendcircle",null);
+//        int i = 0;
+//        contentDatas = new ContentData[7];
+//        while (cursor.moveToNext()) {
+//            if (cursor.getString(cursor.getColumnIndex("megimage1"))==null)
+//            {
+//                ContentData contentData = new ContentData("测试1",cursor.getString(cursor.getColumnIndex("megstring")));
+//                contentDatas[i] = contentData;
+//            }
+//            else if (cursor.getString(cursor.getColumnIndex("megimage2"))==null)
+//            {
 //
-//        ContentData comentData = new ContentData("测试6","评论测试");
-//        List comentDatas = new ArrayList();
-//        comentDatas .add(new ComentData("测试1", "你这个是错误的答案", "测试2"));
-//        comentDatas .add(new ComentData("测试2", "我这个是正确的答案", "测试1"));
-//        comentDatas .add(new ComentData("测试3", "静静的看楼上在装", null));
-//        comentDatas .add(new ComentData("测试4", "+1", null));
-//        comentData.setComentDatas(comentDatas);
-//        comentData.setLikeData(likeDatas);
-//        contentDatas = new ContentData[]{contentData,imagesData,imageData,linkData,likeData,comentData};
+//                List image = new ArrayList();
+//                image.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
+//                ContentData imageData = new ContentData(image,"测试3",cursor.getString(cursor.getColumnIndex("megstring")));
+//                contentDatas[i] = imageData;
+//            }else {
+//                List images = new ArrayList();
+//                images.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
+//                images.add(cursor.getInt(cursor.getColumnIndex("megimage"+2)));
+//                int num = 3;
+//                while (true){
+//                    if (cursor.getString(cursor.getColumnIndex("megimage"+num))==null)
+//                    {
+//                        break;
+//                    }
+//                    images.add(cursor.getInt(cursor.getColumnIndex("megimage"+num)));
+//                    num++;
+//                }
+//                ContentData imageData = new ContentData(images,"测试3",cursor.getString(cursor.getColumnIndex("megstring")));
+//                contentDatas[i] = imageData;
+//            }
+//            i++;
+//        }
+//        cursor.close();
+
     }
 
     private void initData(){
         //Random random = new Random();
         for(int i= 0;i<contentDatas.length;i++){
             data.add(contentDatas[i]);
+            Toast.makeText(MainActivity.this,""+i,Toast.LENGTH_LONG).show();
         }
         adapter.notifyDataSetChanged();
     }
