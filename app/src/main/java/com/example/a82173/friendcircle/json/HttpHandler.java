@@ -1,20 +1,14 @@
 package com.example.a82173.friendcircle.json;
 
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.example.a82173.friendcircle.MainActivity;
-import com.example.a82173.friendcircle.sqlite.UserDBHelper;
+import com.example.a82173.friendcircle.activity.MainActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +17,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-
-import static com.example.a82173.friendcircle.json.TestJson.testJson;
 
 /**
  * Created by pengbin on 2016/11/12.

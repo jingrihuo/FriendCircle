@@ -17,14 +17,13 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import com.example.a82173.friendcircle.MainActivity;
+import com.example.a82173.friendcircle.activity.MainActivity;
 import com.example.a82173.friendcircle.R;
 import com.example.a82173.friendcircle.customerwidget.AutoWrapLineLayout;
 import com.example.a82173.friendcircle.databean.ComentData;
 import com.example.a82173.friendcircle.databean.ContentData;
 import com.example.a82173.friendcircle.databean.LikeData;
 import com.example.a82173.friendcircle.databean.LinkData;
-import com.example.a82173.friendcircle.popup.TitlePopup;
 
 
 /**
@@ -69,29 +68,19 @@ public class ListViewAdapter extends BaseAdapter {
             holder.likeOrComent = (LinearLayout) convertView.findViewById(R.id.likeOrComent);
             holder.coment = (LinearLayout) convertView.findViewById(R.id.coment);
             convertView.setTag(holder);
-        }else{
+        }else {
             holder = (ItemViewHolder) convertView.getTag();
         }
         final ItemViewHolder finalHolder = holder;
+        final int finalPosition = position;
         holder.menu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(finalHolder.likeOrComent.getVisibility()== View.VISIBLE)
-                    finalHolder.likeOrComent.setVisibility(View.GONE);
-                else{
-                    MainActivity.titlePopup.setAnimationStyle(R.style.cricleBottomAnimation);
-                    MainActivity.titlePopup.show(v);
-                    AutoWrapLineLayout like = (AutoWrapLineLayout) finalHolder.likeOrComent.findViewById(R.id.like);
-                    like.setFillMode(AutoWrapLineLayout.MODE_WRAP_CONTENT);
-                    View likeItem = LayoutInflater.from(context).inflate(R.layout.like, null);
-                    TextView userName = (TextView) likeItem.findViewById(R.id.username);
-                    userName.setText("123");
-                    like.addView(likeItem);
-                    finalHolder.likeOrComent.setVisibility(View.VISIBLE);
+                MainActivity.titlePopup.setAnimationStyle(R.style.cricleBottomAnimation);
+                MainActivity.selectPosition = finalPosition;
+                MainActivity.titlePopup.show(v);
                 }
-
-            }
-        });
+            });
 
         //填充用户名称
         holder.username.setText(data.getUsername());
@@ -150,7 +139,7 @@ public class ListViewAdapter extends BaseAdapter {
                 int dheight = drawable.getIntrinsicHeight();
                 if(dheight>dwidth){
                     int theight = dip2px(context,180);
-                    int twidth = theight*dheight/dwidth;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        int twidth = theight*dheight/dwidth;
                     params.height = theight;
                     params.width = twidth;
                 }else{
@@ -184,7 +173,7 @@ public class ListViewAdapter extends BaseAdapter {
             isShowComentOrLike = true;
         }
         if(data.getComentDatas()!=null){
-            for(ComentData item : data.getComentDatas()){
+            for(final ComentData item : data.getComentDatas()){
                 View comentItem = LayoutInflater.from(context).inflate(R.layout.coment, null);
                 if(item.getReplyUsername()!=null){
                     comentItem = LayoutInflater.from(context).inflate(R.layout.replycoment, null);
@@ -195,6 +184,12 @@ public class ListViewAdapter extends BaseAdapter {
                 TextView username = (TextView) comentItem.findViewById(R.id.username);
                 content.setText(item.getContent());
                 username.setText(item.getUsername());
+                comentItem.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(context, item.getContent() , Toast.LENGTH_SHORT).show();
+                    }
+                });
                 coment.addView(comentItem);
             }
             isShowComentOrLike = true;

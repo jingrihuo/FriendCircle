@@ -12,6 +12,15 @@ public class ContentData {
     private LinkData linkData;
     private List<LikeData> likeData;
     private List<ComentData> comentDatas;
+    private int megnumber;
+
+    public int getMegnumber() {
+        return megnumber;
+    }
+
+    public void setMegnumber(int megnumber) {
+        this.megnumber = megnumber;
+    }
 
     public List<ComentData> getComentDatas() {
         return comentDatas;

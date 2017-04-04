@@ -109,9 +109,7 @@ public class PullDownListView extends RelativeLayout implements
 						if (!pullTag) {
 							return super.onTouchEvent(ev);
 						}
-
 					}
-
 					return true;
 				} else if (isBottom
 						&& mListView.getBottom() <= parent.getHeight()) {
@@ -176,11 +174,8 @@ public class PullDownListView extends RelativeLayout implements
 				}
 
 			}
-
-			
 			return super.onTouchEvent(ev);
 		}
-
 	};
 
 	public void scrollBottomTo(int y) {

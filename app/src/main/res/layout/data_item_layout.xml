@@ -6,12 +6,6 @@
     android:layout_height="wrap_content"
     android:padding="10dp">
 
-    <ImageView
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:id="@+id/header"
-        android:src="@drawable/img_touxiang" />
-
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -121,4 +115,12 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <ImageView
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:id="@+id/header"
+        android:src="@drawable/img_touxiang"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
 </RelativeLayout>

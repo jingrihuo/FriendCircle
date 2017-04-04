@@ -24,32 +24,36 @@ public class UserDBHelper extends SQLiteOpenHelper {
                 "primary key (username)\n" +
                 ");";
         sqLiteDatabase.execSQL(sql);//执行sql语句
-        sql = "create table friendcircle (\n" +
-                "megnumber            NUMERIC(6)                     not null,\n" +
-                "username             VARCHAR(20),\n" +
-                "megstring            VARCHAR(50),\n" +
-                "megimage1            INTEGER,\n" +
-                "megimage2            INTEGER,\n" +
-                "megimage3            INTEGER,\n" +
-                "megimage4            INTEGER,\n" +
-                "megimage5            INTEGER,\n" +
-                "megimage6            INTEGER,\n" +
-                "megimage7            INTEGER,\n" +
-                "megimage8            INTEGER,\n" +
-                "megimage9            INTEGER,\n" +
-                "thumbup              INTEGER,\n" +
-                "primary key (megnumber),\n" +
-                "foreign key (username)\n" +
-                "      references \"user\" (username)\n" +
-                ");";
+        sql = "CREATE TABLE friendcircle (\n" +
+                "    megnumber INTEGER      PRIMARY KEY AUTOINCREMENT\n" +
+                "                           NOT NULL,\n" +
+                "    username  VARCHAR (20),\n" +
+                "    megstring VARCHAR (50),\n" +
+                "    megimage1 INTEGER,\n" +
+                "    megimage2 INTEGER,\n" +
+                "    megimage3 INTEGER,\n" +
+                "    megimage4 INTEGER,\n" +
+                "    megimage5 INTEGER,\n" +
+                "    megimage6 INTEGER,\n" +
+                "    megimage7 INTEGER,\n" +
+                "    megimage8 INTEGER,\n" +
+                "    megimage9 INTEGER,\n" +
+                "    thumbup   INTEGER,\n" +
+                "    FOREIGN KEY (\n" +
+                "        username\n" +
+                "    )\n" +
+                "    REFERENCES user (username) \n" +
+                ");\n";
         sqLiteDatabase.execSQL(sql);
-        sql = "create table comments (\n" +
-                "commentsnum          NUMERIC(6)                     not null,\n" +
-                "megnumber            NUMERIC(6),\n" +
-                "commentsstring       VARCHAR(50),\n" +
-                "primary key (commentsnum),\n" +
-                "foreign key (megnumber)\n" +
-                "      references friendcircle (megnumber)\n" +
+        sql = "CREATE TABLE comments (\n" +
+                "    commentsnum    INTEGER      PRIMARY KEY AUTOINCREMENT\n" +
+                "                                NOT NULL,\n" +
+                "    megnumber      INTEGER,\n" +
+                "    commentsstring VARCHAR (50),\n" +
+                "    FOREIGN KEY (\n" +
+                "        megnumber\n" +
+                "    )\n" +
+                "    REFERENCES friendcircle (megnumber) \n" +
                 ");";
         sqLiteDatabase.execSQL(sql);
     }
