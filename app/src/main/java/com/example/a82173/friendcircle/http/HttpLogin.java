@@ -40,22 +40,7 @@ public class HttpLogin {
 
             if (urlConnection.getResponseCode() == 200){
                 InputStream is = urlConnection.getInputStream();
-                // 创建字节输出流对象
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                // 定义读取的长度
-                int len = 0;
-                // 定义缓冲区
-                byte buffer[] = new byte[1024];
-                // 按照缓冲区的大小，循环读取
-                while ((len = is.read(buffer)) != -1) {
-                    // 根据读取的长度写入到os对象中
-                    baos.write(buffer, 0, len);
-                }
-                // 释放资源
-                is.close();
-                baos.close();
-                // 返回字符串
-                result = new String(baos.toByteArray());
+                result = getStringFromInputStream(is);
 
             }
         }catch (Exception e){

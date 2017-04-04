@@ -2,6 +2,7 @@ package com.example.a82173.friendcircle.activity;
 
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -31,7 +32,11 @@ public class LoginActivity extends Activity {
                         LoginActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                username.setText(httpLogin.login(user,pwd));
+                                if (httpLogin.login(user,pwd).equals("successful")){
+                                    Intent intent = new Intent();
+                                    intent.setClass(LoginActivity.this,MainActivity.class);
+                                    LoginActivity.this.startActivity(intent);
+                                }
                             }
                         });
                     }
