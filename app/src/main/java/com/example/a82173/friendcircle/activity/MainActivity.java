@@ -26,7 +26,6 @@ import com.example.a82173.friendcircle.adapter.ListViewAdapter;
 import com.example.a82173.friendcircle.databean.ComentData;
 import com.example.a82173.friendcircle.databean.ContentData;
 import com.example.a82173.friendcircle.databean.LikeData;
-import com.example.a82173.friendcircle.json.HttpHandler;
 import com.example.a82173.friendcircle.popup.ActionItem;
 import com.example.a82173.friendcircle.popup.TitlePopup;
 import com.example.a82173.friendcircle.popup.Util;
@@ -81,8 +80,6 @@ public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickL
         });
         dbHelper = new UserDBHelper(MainActivity.this,"user_db",null,1);
         db =dbHelper.getReadableDatabase();
-        HttpHandler httpHandler = new HttpHandler();
-        httpHandler.SetHttpJson();
         init();
         initData();
 
