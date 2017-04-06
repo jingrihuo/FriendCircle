@@ -20,7 +20,7 @@
             android:id="@+id/username"
             android:textColor="#7992dd" />
 
-        <TextView
+        <com.example.a82173.friendcircle.view.MagicTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="夕阳西下，断桥残雪,夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪夕阳西下，断桥残雪"

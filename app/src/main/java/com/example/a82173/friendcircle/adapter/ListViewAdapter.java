@@ -24,6 +24,7 @@ import com.example.a82173.friendcircle.databean.ComentData;
 import com.example.a82173.friendcircle.databean.ContentData;
 import com.example.a82173.friendcircle.databean.LikeData;
 import com.example.a82173.friendcircle.databean.LinkData;
+import com.example.a82173.friendcircle.view.MagicTextView;
 
 
 /**
@@ -62,7 +63,7 @@ public class ListViewAdapter extends BaseAdapter {
             holder = new ItemViewHolder();
             holder.menu = (ImageButton) convertView.findViewById(R.id.imageButton);
             holder.username = (TextView) convertView.findViewById(R.id.username);
-            holder.content = (TextView) convertView.findViewById(R.id.content);
+            holder.classContent = (MagicTextView) convertView.findViewById(R.id.content);
             holder.container = (FrameLayout) convertView.findViewById(R.id.container);
             holder.link = (LinearLayout) convertView.findViewById(R.id.linkcontent);
             holder.likeOrComent = (LinearLayout) convertView.findViewById(R.id.likeOrComent);
@@ -86,10 +87,10 @@ public class ListViewAdapter extends BaseAdapter {
         holder.username.setText(data.getUsername());
         //填充用户发布信息
         if(data.getContent()!=null){
-            holder.content.setText(data.getContent());
-            holder.content.setVisibility(View.VISIBLE);
+            holder.classContent.setText(data.getContent());
+            holder.classContent.setVisibility(View.VISIBLE);
         }else{
-            holder.content.setVisibility(View.GONE);
+            holder.classContent.setVisibility(View.GONE);
         }
         //填充用户发布的连接信息
         if(data.getLinkData()!=null){
@@ -214,6 +215,7 @@ public class ListViewAdapter extends BaseAdapter {
         public LinearLayout link;
         public LinearLayout likeOrComent;
         public LinearLayout coment;
+        public MagicTextView classContent;
 
         public TextView getUsername() {
             return username;
