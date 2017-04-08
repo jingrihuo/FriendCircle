@@ -233,21 +233,8 @@ public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickL
         }
     }
 
-    //ActionBar的Title的文字居中显示
-    public static void centerActionBarTitle(Activity activity)
-    {
-        int titleId = activity.getResources().getIdentifier("action_bar_title", "id", "android");
-        if (titleId<=0)return;
-        TextView titleTextView = (TextView)activity.findViewById(titleId);
-        DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
-        LinearLayout.LayoutParams txvPars = (LinearLayout.LayoutParams) titleTextView.getLayoutParams();
-        txvPars.gravity = Gravity.CENTER_HORIZONTAL;
-        txvPars.width = metrics.widthPixels;
-        titleTextView.setLayoutParams(txvPars);
-        titleTextView.setGravity(Gravity.CENTER);
-    }
     //回复按钮被点击后触发的事件
-        private void saveComment() {
+    private void saveComment() {
         //判断是否有输入
         if (!TextUtils.isEmpty(Msg.getText())) {
             ContentData test = (ContentData) data.get(selectPosition);
@@ -303,26 +290,29 @@ public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickL
 //            ContentData contentData = new ContentData("DeathBefall",cursor.getString(cursor.getColumnIndex("megstring")));
             ContentData contentData = new ContentData("DeathBefall","VR（Virtual Reality，即虚拟现实，简称VR），是由美国VPL公司创建人拉尼尔（Jaron Lanier）在20世纪80年代初提出的。其具体内涵是：综合利用计算机图形系统和各种现实及控制等接口设备，在计算机上生成的、可交互的三维环境中提供沉浸感觉的技术。其中，计算机生成的、可交互的三维环境称为虚拟环境（即Virtual Environment，简称VE）。虚拟现实技术是一种可以创建和体验虚拟世界的计算机仿真系统的技术。它利用计算机生成一种模拟环境，利用多源信息融合的交互式三维动态视景和实体行为的系统仿真使用户沉浸到该环境中。");
             contentData.setMegnumber(cursor.getInt(cursor.getColumnIndex("megnumber")));
-            if (cursor.getString(cursor.getColumnIndex("megimage1"))!=null && cursor.getString(cursor.getColumnIndex("megimage2")) == null)
-            {
-                List image = new ArrayList();
-                image.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
-                contentData.setImages(image);
-            }else {
-                List images = new ArrayList();
-                images.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
-                images.add(cursor.getInt(cursor.getColumnIndex("megimage"+2)));
-                int num = 3;
-                while (true){
-                    if (cursor.getString(cursor.getColumnIndex("megimage"+num))==null)
-                    {
-                        break;
+            if (cursor.getString(cursor.getColumnIndex("megimage1"))!=null ){
+                if (cursor.getString(cursor.getColumnIndex("megimage2")) == null)
+                {
+                    List image = new ArrayList();
+                    image.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
+                    contentData.setImages(image);
+                }else {
+                    List images = new ArrayList();
+                    images.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
+                    images.add(cursor.getInt(cursor.getColumnIndex("megimage"+2)));
+                    int num = 3;
+                    while (true){
+                        if (cursor.getString(cursor.getColumnIndex("megimage"+num))==null)
+                        {
+                            break;
+                        }
+                        images.add(cursor.getInt(cursor.getColumnIndex("megimage"+num)));
+                        num++;
                     }
-                    images.add(cursor.getInt(cursor.getColumnIndex("megimage"+num)));
-                    num++;
+                    contentData.setImages(images);
                 }
-                contentData.setImages(images);
             }
+
             if (cursor.getInt(cursor.getColumnIndex("thumbup")) != 0){
                 List likeDatas = new ArrayList();
                 likeDatas.add(new LikeData("点赞"));
