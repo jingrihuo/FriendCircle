@@ -58,7 +58,6 @@ public class HttpLogin {
         String result = baos.toString();
         is.close();
         baos.close();
-
         return result;
     }
 }
