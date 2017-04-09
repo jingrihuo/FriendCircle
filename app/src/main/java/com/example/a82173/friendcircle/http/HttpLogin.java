@@ -14,7 +14,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 
 public class HttpLogin {
-    String LoginSevlet = "http://192.168.1.10:9090/ClassCircle/LoginServlet";
+    String LoginSevlet = "http://115.159.41.35:8080/ClassCircle/LoginServlet?method=login";
 
     public String login(String username,String password){
         String result = "null";
@@ -31,6 +31,7 @@ public class HttpLogin {
             //把上面访问方式改为异步操作,就不会出现 android.os.NetworkOnMainThreadException异常
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
+
             String data = "un=" + username + "&pw=" + password;
             // 获得一个输出流，向服务器写数据，默认情况下，不允许程序向服务器输出数据
             OutputStream os = urlConnection.getOutputStream();
@@ -41,7 +42,6 @@ public class HttpLogin {
             if (urlConnection.getResponseCode() == 200){
                 InputStream is = urlConnection.getInputStream();
                 result = getStringFromInputStream(is);
-
             }
         }catch (Exception e){
             e.printStackTrace();
