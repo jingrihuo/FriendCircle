@@ -2,16 +2,13 @@ package com.example.a82173.friendcircle.http;
 
 import android.os.StrictMode;
 
-import org.apache.http.*;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
+
+import static com.example.a82173.friendcircle.http.HttpParsing.getStringFromInputStream;
 
 public class HttpLogin {
     String LoginSevlet = "http://115.159.41.35:8080/ClassCircle/LoginServlet?method=login";
@@ -48,16 +45,5 @@ public class HttpLogin {
         }
         return result;
     }
-    public static String getStringFromInputStream(InputStream is) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int len = -1;
-        while ((len = is.read(buffer)) != -1) {
-            baos.write(buffer, 0, len);
-        }
-        String result = baos.toString();
-        is.close();
-        baos.close();
-        return result;
-    }
+
 }
