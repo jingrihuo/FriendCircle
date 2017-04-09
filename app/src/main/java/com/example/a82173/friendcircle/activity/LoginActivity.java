@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.a82173.friendcircle.R;
 import com.example.a82173.friendcircle.http.HttpLogin;
@@ -31,10 +32,16 @@ public class LoginActivity extends Activity {
                         LoginActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (httpLogin.login(user,pwd).equals("successful")){
+                                String result = httpLogin.login(user,pwd);
+                                Toast.makeText(LoginActivity.this,result,Toast.LENGTH_SHORT).show();
+                                if (result.equals("success")){
                                     Intent intent = new Intent();
                                     intent.setClass(LoginActivity.this,MainActivity.class);
                                     LoginActivity.this.startActivity(intent);
+                                }else if(result.equals("faild")){
+                                    Toast.makeText(LoginActivity.this,"账号密码有误",Toast.LENGTH_SHORT).show();
+                                }else{
+                                    Toast.makeText(LoginActivity.this,"当前网络状态不好或服务器故障请稍后再试",Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });

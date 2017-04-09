@@ -2,6 +2,9 @@ package com.example.a82173.friendcircle.http;
 
 import android.os.StrictMode;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -11,7 +14,7 @@ import java.net.URL;
 import static com.example.a82173.friendcircle.http.HttpParsing.getStringFromInputStream;
 
 public class HttpLogin {
-    String LoginSevlet = "http://115.159.41.35:8080/ClassCircle/LoginServlet?method=login";
+    String LoginSevlet = "http://192.168.1.27:8080/ClassCircle/clienttest?method=login";
 
     public String login(String username,String password){
         String result = "null";
@@ -29,12 +32,23 @@ public class HttpLogin {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
 
-            String data = "un=" + username + "&pw=" + password;
+//            String data = "un=" + username + "&pw=" + password;
             // 获得一个输出流，向服务器写数据，默认情况下，不允许程序向服务器输出数据
+            JSONObject test = new JSONObject();
+            test.put("check1","Android");
+            test.put("check2","Server");
+            JSONArray user = new JSONArray();
+            JSONObject usertest = new JSONObject();
+            usertest.put("userAccount",username);
+            usertest.put("userPassword",password);
+            user.put(usertest);
+            test.put("results",user);
             OutputStream os = urlConnection.getOutputStream();
-            os.write(data.getBytes());
+            os.write(test.toString().getBytes());
             os.flush();
             os.close();
+
+            urlConnection.setConnectTimeout(20);
 
             if (urlConnection.getResponseCode() == 200){
                 InputStream is = urlConnection.getInputStream();
