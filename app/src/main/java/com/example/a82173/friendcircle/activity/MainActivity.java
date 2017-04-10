@@ -8,8 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,6 +35,8 @@ import com.example.a82173.friendcircle.view.YProgressView;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 
 
 public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickListener{
@@ -287,7 +287,7 @@ public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickL
 
         Cursor cursor =db.rawQuery("select * from friendcircle",null);
         while (cursor.moveToNext()) {
-            ContentData contentData = new ContentData("DeathBefall",cursor.getString(cursor.getColumnIndex("megstring")));
+            ContentData contentData = new ContentData(userData.getUserName(),cursor.getString(cursor.getColumnIndex("megstring")));
 //            ContentData contentData = new ContentData("DeathBefall","VR（Virtual Reality，即虚拟现实，简称VR），是由美国VPL公司创建人拉尼尔（Jaron Lanier）在20世纪80年代初提出的。其具体内涵是：综合利用计算机图形系统和各种现实及控制等接口设备，在计算机上生成的、可交互的三维环境中提供沉浸感觉的技术。其中，计算机生成的、可交互的三维环境称为虚拟环境（即Virtual Environment，简称VE）。虚拟现实技术是一种可以创建和体验虚拟世界的计算机仿真系统的技术。它利用计算机生成一种模拟环境，利用多源信息融合的交互式三维动态视景和实体行为的系统仿真使用户沉浸到该环境中。");
             contentData.setMegnumber(cursor.getInt(cursor.getColumnIndex("megnumber")));
             if (cursor.getString(cursor.getColumnIndex("megimage1"))!=null ){

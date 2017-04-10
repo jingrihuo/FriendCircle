@@ -10,9 +10,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.a82173.friendcircle.R;
+import com.example.a82173.friendcircle.databean.UserData;
 import com.example.a82173.friendcircle.http.HttpLogin;
 
 public class LoginActivity extends Activity {
+    public static UserData userData = new UserData();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +37,7 @@ public class LoginActivity extends Activity {
                                 String result = httpLogin.login(user,pwd);
                                 Toast.makeText(LoginActivity.this,result,Toast.LENGTH_SHORT).show();
                                 if (result.equals("success")){
+                                    userData.setUserName(user);
                                     Intent intent = new Intent();
                                     intent.setClass(LoginActivity.this,MainActivity.class);
                                     LoginActivity.this.startActivity(intent);
