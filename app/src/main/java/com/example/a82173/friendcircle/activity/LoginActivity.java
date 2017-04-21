@@ -38,6 +38,7 @@ public class LoginActivity extends Activity {
                                 Toast.makeText(LoginActivity.this,result,Toast.LENGTH_SHORT).show();
                                 if (result.equals("success")){
                                     userData.setUserName(user);
+                                    userData.setUserType("班主任");
                                     Intent intent = new Intent();
                                     intent.setClass(LoginActivity.this,MainActivity.class);
                                     LoginActivity.this.startActivity(intent);

@@ -9,7 +9,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -20,13 +20,12 @@ import java.util.ArrayList;
 
 //功能描述：标题按钮上的弹窗（继承自PopupWindow）
 
-public class TitlePopup extends PopupWindow {
+public class TitlePopup extends PopupWindow implements OnClickListener{
 
-	private TextView priase;
-	private TextView comment;
-	private TextView thumbUp;
-
-	private View view;
+	private LinearLayout priase;
+	private LinearLayout comment;
+	private TextView mpriase;
+	private TextView mcomment;
 
 	private Context mContext;
 
@@ -42,9 +41,6 @@ public class TitlePopup extends PopupWindow {
 	// 屏幕的宽度和高度
 	private int mScreenWidth, mScreenHeight;
 
-	// 判断是否需要添加或更新列表子类项
-	private boolean mIsDirty;
-
 	// 位置不在中心
 	private int popupGravity = Gravity.NO_GRAVITY;
 
@@ -54,50 +50,38 @@ public class TitlePopup extends PopupWindow {
 	// 定义弹窗子类项列表
 	private ArrayList<ActionItem> mActionItems = new ArrayList<ActionItem>();
 
+	public ArrayList<ActionItem> getmActionItems() {
+		return mActionItems;
+	}
+
+
 	public TitlePopup(Context context) {
-		// 设置布局的参数
-		this(context, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-	}
-
-	public void SetView(View view){
-		this.view = view;
-	}
-
-	public View GetView(){
-		return view;
-	}
-
-	public void SetThumbUp(TextView thumbUp){
-		this.thumbUp = thumbUp;
-	}
-
-	public TextView GetThumbUp(){
-		return thumbUp;
-	}
-
-	public TitlePopup(Context context, int width, int height) {
 		this.mContext = context;
-
-		// 设置可以获得焦点
-		setFocusable(true);
-		// 设置弹窗内可点击
-		setTouchable(true);
-		// 设置弹窗外可点击
-		setOutsideTouchable(true);
-		// 设置弹窗的宽度和高度
-		setWidth(width);
-		setHeight(height);
-
-		setBackgroundDrawable(new BitmapDrawable());
-
-		// 设置弹窗的布局界面
 		View view = LayoutInflater.from(mContext).inflate(
 				R.layout.comment_popu, null);
-		setContentView(view);
-		priase = (TextView) view.findViewById(R.id.popu_praise);
-		comment = (TextView) view.findViewById(R.id.popu_comment);
-		priase.setOnClickListener(onclick);
-		comment.setOnClickListener(onclick);
+		this.setContentView(view);
+		priase = (LinearLayout) view.findViewById(R.id.popu_praise);
+		comment = (LinearLayout) view.findViewById(R.id.popu_comment);
+		mpriase = (TextView) view.findViewById(R.id.praise);
+		mcomment = (TextView) view.findViewById(R.id.comment);
+		priase.setOnClickListener(this);
+		comment.setOnClickListener(this);
+
+		// 设置可以获得焦点
+		this.setFocusable(true);
+		// 设置弹窗内可点击
+		this.setTouchable(true);
+		// 设置弹窗外可点击
+		this.setOutsideTouchable(true);
+		// 设置弹窗的宽度和高度
+		this.setWidth(Util.dip2px(context, 180));
+		this.setHeight(Util.dip2px(context, 40));
+		this.update();
+
+		this.setBackgroundDrawable(new BitmapDrawable());
+		this.setAnimationStyle(R.style.cricleBottomAnimation);
+
+		initAction();
 	}
 
 	//显示弹窗列表界面
@@ -107,46 +91,38 @@ public class TitlePopup extends PopupWindow {
 		// 设置矩形的大小
 		mRect.set(mLocation[0], mLocation[1], mLocation[0] + c.getWidth(),
 				mLocation[1] + c.getHeight());
-		priase.setText(mActionItems.get(0).mTitle);
+		mpriase.setText(mActionItems.get(0).mTitle);
 		// 判断是否需要添加或更新列表子类项
-		if (mIsDirty) {
-			// populateActions();
+		if (!this.isShowing()) {
+			showAtLocation(c, Gravity.NO_GRAVITY, mLocation[0] - this.getWidth()
+					- 10, mLocation[1] - ((this.getHeight() - c.getHeight()) / 2));
+		}else {
+			dismiss();
 		}
-
-		showAtLocation(c, Gravity.NO_GRAVITY, mLocation[0] - this.getWidth()
-				- 10, mLocation[1] - ((this.getHeight() - c.getHeight()) / 2));
 	}
 	//选项监听
-	OnClickListener onclick = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			dismiss();
-			switch (v.getId()) {
-				case R.id.popu_comment:
-					mItemOnClickListener.onItemClick(mActionItems.get(1), 1);
-					break;
-				case R.id.popu_praise:
-					mItemOnClickListener.onItemClick(mActionItems.get(0), 0);
-					break;
-			}
+	public void onClick(View v) {
+		dismiss();
+		switch (v.getId()) {
+			case R.id.popu_comment:
+				mItemOnClickListener.onItemClick(mActionItems.get(1), 1);
+				break;
+			case R.id.popu_praise:
+				mItemOnClickListener.onItemClick(mActionItems.get(0), 0);
+				break;
 		}
-
-	};
+	}
 
 	//添加子类项
 	public void addAction(ActionItem action) {
 		if (action != null) {
 			mActionItems.add(action);
-			mIsDirty = true;
 		}
 	}
 
-	//清除子类项
-	public void cleanAction() {
-		if (mActionItems.isEmpty()) {
-			mActionItems.clear();
-			mIsDirty = true;
-		}
+	public void initAction(){
+		addAction(new ActionItem(mContext,"赞",R.drawable.circle_comment));
+		addAction(new ActionItem(mContext,"评论",R.drawable.circle_praise));
 	}
 
 	//根据位置得到子类项
@@ -157,11 +133,9 @@ public class TitlePopup extends PopupWindow {
 	}
 
 	//设置监听事件
-	public void setItemOnClickListener(
-			OnItemOnClickListener onItemOnClickListener) {
+	public void setItemOnClickListener(OnItemOnClickListener onItemOnClickListener) {
 		this.mItemOnClickListener = onItemOnClickListener;
 	}
-
 
 	// 功能描述：弹窗子类项按钮监听事件
 	public static interface OnItemOnClickListener {

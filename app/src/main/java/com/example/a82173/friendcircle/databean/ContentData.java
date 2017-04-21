@@ -2,6 +2,8 @@ package com.example.a82173.friendcircle.databean;
 
 import java.util.List;
 
+import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
+
 /**
  * Created by SunFly on 2016/10/27.
  */
@@ -9,10 +11,18 @@ public class ContentData {
     private List<Integer> images;
     private String username;
     private String content;
-    private LinkData linkData;
+    private String createTime;
     private List<LikeData> likeData;
     private List<ComentData> comentDatas;
     private int megnumber;
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
+    }
 
     public int getMegnumber() {
         return megnumber;
@@ -36,20 +46,6 @@ public class ContentData {
 
     public void setLikeData(List<LikeData> likeData) {
         this.likeData = likeData;
-    }
-
-    public LinkData getLinkData() {
-        return linkData;
-    }
-
-    public void setLinkData(LinkData linkData) {
-        this.linkData = linkData;
-    }
-
-    public ContentData(String username, String content, LinkData linkData) {
-        this.username = username;
-        this.content = content;
-        this.linkData = linkData;
     }
 
     public ContentData(String username, String content) {
@@ -88,5 +84,14 @@ public class ContentData {
         this.content = content;
     }
 
-
+    public boolean isLike(){
+        boolean result = false;
+        if(this.likeData!=null){
+            for (LikeData item : this.likeData){
+                if (userData.getUserName().equals(item.getUsername()))
+                    result = true;
+            }
+        }
+        return result;
+    }
 }

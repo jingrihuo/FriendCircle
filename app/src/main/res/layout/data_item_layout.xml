@@ -42,52 +42,43 @@
         </FrameLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="#f1f1f1"
-            android:padding="5dp"
-            android:id="@+id/linkcontent"
-            android:visibility="gone"
-            android:layout_marginTop="5dp">
-
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:id="@+id/linkimg"
-                android:src="@drawable/header" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="作为一个连接标题，我也是有原则的"
-                android:id="@+id/linktitle"
-                android:paddingLeft="5dp"
-                android:gravity="center_vertical" />
-        </LinearLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:layout_marginTop="5dp">
-
-            <TextView
+                android:id="@+id/createTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="20 小时"
-                android:id="@+id/time"
-                android:layout_gravity="left|top"
-                android:textSize="10sp" />
+                android:textColor="@color/im_font_color_text_hint"
+                android:textSize="12sp"
+                android:text="20小时"/>
+            <TextView
+                android:id="@+id/deleteBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dip"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:text="删除"
+                android:textSize="12sp"
+                android:textColor="@color/color_8290AF"
+                android:background="@drawable/im_selector_social_dig_name_bg"
+                android:visibility="gone"/>
+
+            <View
+                android:layout_width="0dip"
+                android:layout_height="1dip"
+                android:layout_weight="1" />
 
             <ImageButton
+                android:id="@+id/likeOrComentButton"
                 android:layout_width="20dp"
                 android:layout_height="15dp"
-                android:id="@+id/imageButton"
                 android:layout_gravity="right|top"
-                android:src="@drawable/coment_normal"
                 android:background="@drawable/coment_normal"
                 android:scaleType="centerCrop" />
-        </FrameLayout>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -104,23 +95,34 @@
                 android:layout_height="wrap_content"
                 autoWrapLineLayout:verticalGap="1dp"
                 autoWrapLineLayout:horizontalGap="1dp"
-                android:layout_marginTop="15dp">
-            </com.example.a82173.friendcircle.customerwidget.AutoWrapLineLayout>
+                android:layout_marginTop="15dp"
+                />
 
-            <LinearLayout
-                android:orientation="vertical"
+            <View
+                android:id="@+id/lin_dig"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/coment"></LinearLayout>
+                android:layout_height="1dip"
+                android:background="@color/im_line_color"
+                android:layout_marginTop="5dip"
+                android:layout_marginBottom="5dip"
+                />
+
+            <com.example.a82173.friendcircle.view.CommentListView
+                android:id="@+id/commentList"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical"
+                />
+
         </LinearLayout>
 
     </LinearLayout>
 
     <ImageView
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:id="@+id/header"
-        android:src="@drawable/img_touxiang"
+        android:id="@+id/headimg"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:src="@drawable/img_touxiang" />
 </RelativeLayout>

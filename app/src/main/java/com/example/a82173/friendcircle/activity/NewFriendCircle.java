@@ -10,7 +10,6 @@ import android.widget.Toast;
 
 import com.example.a82173.friendcircle.R;
 
-import static com.example.a82173.friendcircle.activity.MainActivity.db;
 
 public class NewFriendCircle extends Activity {
 
@@ -25,14 +24,7 @@ public class NewFriendCircle extends Activity {
             @Override
             public void onClick(View view) {
                 String Megs = Message.getText().toString();
-                if (Megs.equals("")){
-                    Toast.makeText(NewFriendCircle.this,"请输入你的朋友圈", Toast.LENGTH_SHORT).show();
-                }else {
-                    db.execSQL("insert into friendcircle(username, megstring,thumbup) values(?,?,?)",new Object[]{"DeathBefall",Megs,0});
-                    db.close();
-                    Intent intent = new Intent(NewFriendCircle.this,MainActivity.class);
-                    startActivity(intent);
-                }
+
             }
         });
         BackFriendCircle.setOnClickListener(new View.OnClickListener() {

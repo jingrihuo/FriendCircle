@@ -13,12 +13,6 @@ import android.widget.TextView;
 import com.example.a82173.friendcircle.R;
 import com.example.a82173.friendcircle.activity.MyApplication;
 
-
-/**
- * @author yiw
- * @Description:
- * @date 16/1/2 16:54
- */
 public class CircleMovementMethod extends BaseMovementMethod {
     public final String TAG = CircleMovementMethod.class.getSimpleName();
     public final static int DEFAULT_COLOR = R.color.transparent;

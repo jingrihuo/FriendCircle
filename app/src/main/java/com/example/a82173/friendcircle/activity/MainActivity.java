@@ -1,340 +1,336 @@
 package com.example.a82173.friendcircle.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 
 
 import com.example.a82173.friendcircle.R;
-import com.example.a82173.friendcircle.adapter.ListViewAdapter;
+import com.example.a82173.friendcircle.adapter.CircleAdapter;
 import com.example.a82173.friendcircle.databean.ComentData;
+import com.example.a82173.friendcircle.databean.CommentConfig;
 import com.example.a82173.friendcircle.databean.ContentData;
 import com.example.a82173.friendcircle.databean.LikeData;
-import com.example.a82173.friendcircle.popup.ActionItem;
-import com.example.a82173.friendcircle.popup.TitlePopup;
-import com.example.a82173.friendcircle.popup.Util;
-import com.example.a82173.friendcircle.sqlite.UserDBHelper;
-import com.example.a82173.friendcircle.view.EyeView;
-import com.example.a82173.friendcircle.view.PullDownListView;
-import com.example.a82173.friendcircle.view.YProgressView;
+import com.example.a82173.friendcircle.presenter.CirclePresenter;
+import com.example.a82173.friendcircle.presenter.view.ICircleView;
+import com.bumptech.glide.Glide;
+import com.example.a82173.friendcircle.view.CommentListView;
+import com.example.a82173.friendcircle.view.DivItemDecoration;
+import com.malinskiy.superrecyclerview.SuperRecyclerView;
+import com.malinskiy.superrecyclerview.OnMoreListener;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 
 
-public  class MainActivity extends Activity implements TitlePopup.OnItemOnClickListener{
-    static public TitlePopup titlePopup;
+public class MainActivity extends Activity implements ICircleView {
+    public static final int HEADVIEW_SIZE = 1;
     static public int selectPosition;
+    public final int re_comments = 0;
+    public final int re_reply = 1;
+
+    private int mScreenHeight;
+    private int mEditTextBodyHeight;
+    private int mCurrentKeyboardH;
+    private int mSelectCircleItemH;
+    private int mSelectCommentItemOffset;
+
+    private CirclePresenter mPresenter;
+    private CircleAdapter adapter;
+    private ContentData[] contentDatas;
+    private SuperRecyclerView classCircleView;
+    private LinearLayoutManager layoutManager;
+    private CommentConfig mCommentConfig;
+
+    private EditText mReply;
     private TextView thumbUp;
     private EditText Msg;
     private LinearLayout mAmLlLiuyan;
-    private ListView listView;
-    private ListViewAdapter adapter;
+    private static Context mContext;
     private View headView;
-    private List data = new ArrayList();
-    private ContentData[] contentDatas;
-    public static UserDBHelper dbHelper;
-    public static SQLiteDatabase db;
-    Context mContext;
-    PullDownListView pullDownListView;
-    YProgressView progressView;
-    EyeView eyeView;
+    private InputMethodManager inputMethodManager;
+    private RelativeLayout bodyLayout;
+
+    private List<ContentData> data = new ArrayList<ContentData>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_test);
+        setContentView(R.layout.activity_main);
+        mPresenter = new CirclePresenter();
+        mPresenter.attachView(this);
         mContext = this;
-        pullDownListView = (PullDownListView) this
-                .findViewById(R.id.pullDownListView);
-        progressView = (YProgressView) this
-                .findViewById(R.id.progressView);
-        eyeView = (EyeView) this.findViewById(R.id.eyeView);
-
-        Msg = (EditText) findViewById(R.id.et_msg);
         mAmLlLiuyan = (LinearLayout) findViewById(R.id.pinglun);
+        mReply = (EditText) findViewById(R.id.et_msg);
         //点击回复触发回复功能
         Button huifu = (Button) findViewById(R.id.btn_save);
-        huifu.setOnClickListener(new OnClickListener() {
+        userData.setUserName("Death");
+        userData.setUserType("班主任");
+        initView();
+    }
+
+    @SuppressLint({"ClickableViewAccessibility", "InlinedApi"})
+    private void initView() {
+        Window window = this.getWindow();
+        window.setStatusBarColor(getResources().getColor(R.color.activity_bg));
+
+        classCircleView = (SuperRecyclerView) findViewById(R.id.classcircleView);
+        layoutManager = new LinearLayoutManager(this);
+        classCircleView.setLayoutManager(layoutManager);
+        classCircleView.addItemDecoration(new DivItemDecoration(2, true));
+        classCircleView.getMoreProgressView().getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+
+        classCircleView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View view) {
-                saveComment();
+            public boolean onTouch(View v, MotionEvent event) {
+                if (mAmLlLiuyan.getVisibility() == View.VISIBLE) {
+                    EditTextReplyVisible(View.GONE, null);
+                    return true;
+                }
+                return false;
             }
         });
-        dbHelper = new UserDBHelper(MainActivity.this,"user_db",null,1);
-        db =dbHelper.getReadableDatabase();
-        init();
-        initData();
 
-
-        pullDownListView.setOnPullHeightChangeListener(new PullDownListView.OnPullHeightChangeListener(){
+        classCircleView.setRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onTopHeightChange(int headerHeight,
-                                          int pullHeight) {
-                // TODO Auto-generated method stub
-                float progress = (float) pullHeight
-                        / (float) headerHeight;
-
-                if(progress<0.5){
-                    progress = 0.0f;
-                }else{
-                    progress = (progress-0.5f)/0.5f;
-                }
-
-
-                if (progress > 1.0f) {
-                    progress = 1.0f;
-                }
-
-                if (!pullDownListView.isRefreshing()) {
-                    eyeView.setProgress(progress);
-                }
-            }
-
-            @Override
-            public void onBottomHeightChange(int footerHeight,
-                                             int pullHeight) {
-                // TODO Auto-generated method stub
-                float progress = (float) pullHeight
-                        / (float) footerHeight;
-
-                if(progress<0.5){
-                    progress = 0.0f;
-                }else{
-                    progress = (progress-0.5f)/0.5f;
-                }
-
-                if (progress > 1.0f) {
-                    progress = 1.0f;
-                }
-
-                if (!pullDownListView.isRefreshing()) {
-                    progressView.setProgress(progress);
-                }
-
-            }
-
-            @Override
-            public void onRefreshing(final boolean isTop) {
-                // TODO Auto-generated method stub
-                if (isTop) {
-                    eyeView.startAnimate();
-                } else {
-                    progressView.startAnimate();
-                }
-
+            public void onRefresh() {
                 new Handler().postDelayed(new Runnable() {
-
                     @Override
                     public void run() {
-                        // TODO Auto-generated method stub
-                        pullDownListView.pullUp();
-                        if (isTop) {
-                            eyeView.stopAnimate();
-                            //刷新完调用的函数
-                            initData();
-                        } else {
-                            progressView.stopAnimate();
-                            initData();
-                        }
+                        classCircleView.setRefreshing(false);
                     }
-
-                }, 3000);
+                }, 2000);
             }
-
         });
-        titlePopup = new TitlePopup(this, Util.dip2px(this, 165), Util.dip2px(
-                this, 40));
-        titlePopup
-                .addAction(new ActionItem(this, "赞", R.drawable.circle_praise));
-        titlePopup
-                .addAction(new ActionItem(this, "评论", R.drawable.circle_comment));
-        titlePopup.setItemOnClickListener(this);
-    }
-    //根据menu创建ActionBar选项
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.actionbar, menu);
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        //获取实例
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        return super.onCreateOptionsMenu(menu);
-    }
-    private void setOverflowShowingAlways() {
-        try {
-            ViewConfiguration config = ViewConfiguration.get(this);
-            Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
-            menuKeyField.setAccessible(true);
-            menuKeyField.setBoolean(config, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_compose:
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this,NewFriendCircle.class);
-                MainActivity.this.startActivity(intent);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-    //赞和评论被点击后触发的事件
-    public void onItemClick(ActionItem item, int position) {
-        View SelectView = adapter.getView(selectPosition,null,pullDownListView.getListView());
-        switch (position){
-            case 1:
-                mAmLlLiuyan.setVisibility(View.VISIBLE);
-                int Y = SelectView.getHeight();
-                if(adapter.getCount() == selectPosition + 1) {
-                    pullDownListView.getListView().setSelection(pullDownListView.getListView().getBottom());
-                }else{
-                    pullDownListView.getListView().setSelectionFromTop(selectPosition+1,0);
-                }
-                onFocusChange(true);
-                break;
-            case 0:
-                ContentData test = (ContentData) data.get(selectPosition);
-                if(test.getLikeData() == null){
-                    List likeDatas = new ArrayList();
-                    likeDatas.add(new LikeData("点赞"));
-                    test.setLikeData(likeDatas);
-                }else{
-                    test.getLikeData().add(new LikeData("点赞"));
-                }
-                data.set(selectPosition,test);
-                db = dbHelper.getReadableDatabase();
-                String sql = "update friendcircle set thumbup=thumbup+1 where megnumber = ?";
-                db.execSQL(sql,new Object[]{test.getMegnumber()});
-                db.close();
-                adapter.notifyDataSetChanged();
-                break;
-            default:
-        }
-    }
-
-    //回复按钮被点击后触发的事件
-    private void saveComment() {
-        //判断是否有输入
-        if (!TextUtils.isEmpty(Msg.getText())) {
-            ContentData test = (ContentData) data.get(selectPosition);
-            if(test.getComentDatas() == null) {
-                List comentDatas = new ArrayList();
-                comentDatas.add(new ComentData("DeathBefall",Msg.getText().toString(), null));
-                test.setComentDatas(comentDatas);
-            }
-            else {
-                test.getComentDatas().add(new ComentData("DeathBefall", Msg.getText().toString(), null));
-            }
-            data.set(selectPosition,test);
-            db = dbHelper.getReadableDatabase();
-            String sql = "insert into comments(megnumber, commentsstring) values(?,?)";
-            db.execSQL(sql,new Object[]{test.getMegnumber(),Msg.getText().toString()});
-            db.close();
-            adapter.notifyDataSetChanged();
-            mAmLlLiuyan.setVisibility(View.GONE);
-            onFocusChange(false);
-        } else {
-            Toast.makeText(this, "请输入内容后在留言", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    //输入法显示和隐藏
-    private void onFocusChange(boolean hasFocus) {
-        final boolean isFocus = hasFocus;
-        (new Handler()).postDelayed(new Runnable() {
-            public void run() {
-                InputMethodManager imm = (InputMethodManager)
-                        MainActivity.this.getSystemService(INPUT_METHOD_SERVICE);
-                if (isFocus) {
-                    //显示输入法
-                    Msg.setFocusable(true);
-                    Msg.requestFocus();
-                    imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
-                } else {
-                    //隐藏输入法
-                    imm.hideSoftInputFromWindow(Msg.getWindowToken(), 0);
-                }
-            }
-        }, 100);
-    }
-    private void init(){
-        adapter = new ListViewAdapter(this,data);
-        headView = LayoutInflater.from(this).inflate(R.layout.header, null);
-        listView = (ListView)pullDownListView.getListView();
-        listView.addHeaderView(headView, null, false);
-        listView.setAdapter(adapter);
-
-        Cursor cursor =db.rawQuery("select * from friendcircle",null);
-        while (cursor.moveToNext()) {
-            ContentData contentData = new ContentData(userData.getUserName(),cursor.getString(cursor.getColumnIndex("megstring")));
-//            ContentData contentData = new ContentData("DeathBefall","VR（Virtual Reality，即虚拟现实，简称VR），是由美国VPL公司创建人拉尼尔（Jaron Lanier）在20世纪80年代初提出的。其具体内涵是：综合利用计算机图形系统和各种现实及控制等接口设备，在计算机上生成的、可交互的三维环境中提供沉浸感觉的技术。其中，计算机生成的、可交互的三维环境称为虚拟环境（即Virtual Environment，简称VE）。虚拟现实技术是一种可以创建和体验虚拟世界的计算机仿真系统的技术。它利用计算机生成一种模拟环境，利用多源信息融合的交互式三维动态视景和实体行为的系统仿真使用户沉浸到该环境中。");
-            contentData.setMegnumber(cursor.getInt(cursor.getColumnIndex("megnumber")));
-            if (cursor.getString(cursor.getColumnIndex("megimage1"))!=null ){
-                if (cursor.getString(cursor.getColumnIndex("megimage2")) == null)
-                {
-                    List image = new ArrayList();
-                    image.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
-                    contentData.setImages(image);
-                }else {
-                    List images = new ArrayList();
-                    images.add(cursor.getInt(cursor.getColumnIndex("megimage1")));
-                    images.add(cursor.getInt(cursor.getColumnIndex("megimage"+2)));
-                    int num = 3;
-                    while (true){
-                        if (cursor.getString(cursor.getColumnIndex("megimage"+num))==null)
-                        {
-                            break;
-                        }
-                        images.add(cursor.getInt(cursor.getColumnIndex("megimage"+num)));
-                        num++;
+        classCircleView.setupMoreListener(new OnMoreListener() {
+            @Override
+            public void onMoreAsked(int overallItemsCount, int itemsBeforeMore, int maxLastVisiblePosition) {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.getDatas().addAll(data);
+                        adapter.notifyDataSetChanged();
                     }
-                    contentData.setImages(images);
+                }, 1);
+            }
+        }, 1);
+
+        classCircleView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState != RecyclerView.SCROLL_STATE_IDLE) {
+                    Glide.with(MainActivity.this).pauseRequests();
                 }
             }
 
-            if (cursor.getInt(cursor.getColumnIndex("thumbup")) != 0){
-                List likeDatas = new ArrayList();
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                Glide.with(MainActivity.this).resumeRequests();
+            }
+        });
+        adapter = new CircleAdapter(this);
+        adapter.setCirclePresenter(mPresenter);
+        classCircleView.setAdapter(adapter);
+        initDatas();
+        adapter.notifyDataSetChanged();
+        setViewTreeObserver();
+    }
+
+    //加载朋友圈内容
+    private void initDatas() {
+        Random random = new Random();
+        for (int i = 0; i < 10; i++) {
+            ContentData contentData = new ContentData("DeathBefall", "测试测试");
+            List likeDatas = new ArrayList();
+            int likeSize = random.nextInt(6);
+            if (likeSize > 0) {
                 likeDatas.add(new LikeData("点赞"));
                 contentData.setLikeData(likeDatas);
-                for(int i = 2; i <= cursor.getInt(cursor.getColumnIndex("thumbup"));i++){
-                  contentData.getLikeData().add(new LikeData("点赞"));
+                for (int j = 1; j < likeSize; j++) {
+                    contentData.getLikeData().add(new LikeData("点赞"));
                 }
             }
-            int megnumber = cursor.getInt(cursor.getColumnIndex("megnumber"));
-            Cursor commentsstring =db.rawQuery("select * from comments where megnumber = ?",new String[]{Integer.toString(megnumber)});
             List comentDatas = new ArrayList();
-            while (commentsstring.moveToNext()){
-                comentDatas.add(new ComentData("DeathBefall", commentsstring.getString(commentsstring.getColumnIndex("commentsstring")) , null));
+            int comentSize = random.nextInt(6);
+            if (comentSize > 0) {
+                comentDatas.add(new ComentData("DeathBefall", "测试", null));
+                for (int j = 1; j < likeSize; j++) {
+                    int reply = random.nextInt(2);
+                    if (reply == 0) {
+                        comentDatas.add(new ComentData("DeathBefall", "测试", null));
+                    } else {
+                        comentDatas.add(new ComentData("DeathBefall", "测试", "测试"));
+                    }
+                }
                 contentData.setComentDatas(comentDatas);
             }
             data.add(contentData);
         }
-        cursor.close();
+        adapter.setDatas(data);
+
     }
 
-    private void initData(){
+    private void setViewTreeObserver() {
+        bodyLayout = (RelativeLayout) findViewById(R.id.bodyLayout);
+        final ViewTreeObserver swipeRefreshLayoutVTO = bodyLayout.getViewTreeObserver();
+        swipeRefreshLayoutVTO.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+
+                Rect r = new Rect();
+                bodyLayout.getWindowVisibleDisplayFrame(r);
+                int statusBarH =  getStatusBarHeight();//状态栏高度
+                int screenH = bodyLayout.getRootView().getHeight();
+                if(r.top != statusBarH ){
+                    //在这个demo中r.top代表的是状态栏高度，在沉浸式状态栏时r.top＝0，通过getStatusBarHeight获取状态栏高度
+                    r.top = statusBarH;
+                }
+                int keyboardH = screenH - (r.bottom - r.top);
+                if(keyboardH == mCurrentKeyboardH){//有变化时才处理，否则会陷入死循环
+                    return;
+                }
+
+                mCurrentKeyboardH = keyboardH;
+                mScreenHeight = screenH;//应用屏幕的高度
+                mEditTextBodyHeight = mAmLlLiuyan.getHeight();
+                if(layoutManager!=null && mCommentConfig != null){
+                    layoutManager.scrollToPositionWithOffset(mCommentConfig.circlePosition + CircleAdapter.HEADVIEW_SIZE, getListviewOffset(mCommentConfig));
+                }
+            }
+        });
+    }
+
+    //评论弹窗
+    @Override
+    public void EditTextReplyVisible(int visibility, CommentConfig config) {
+        mAmLlLiuyan.setVisibility(visibility);
+        mCommentConfig = config;
+        measureCircleItemHighAndCommentItemOffset(config);
+
+        if (View.VISIBLE == visibility) {
+            mReply.requestFocus();
+            inputMethodManager = (InputMethodManager) mReply.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+        } else if (View.GONE == visibility) {
+            inputMethodManager = (InputMethodManager) mReply.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(mReply.getWindowToken(), 0);
+        }
+    }
+
+    @Override
+    public void addLike(int position) {
+        if (data.get(position).getLikeData() == null) {
+            List likeDatas = new ArrayList();
+            likeDatas.add(new LikeData(userData.getUserName()));
+            data.get(position).setLikeData(likeDatas);
+        } else {
+            data.get(position).getLikeData().add(new LikeData(userData.getUserName()));
+        }
         adapter.notifyDataSetChanged();
     }
 
+    @Override
+    public void deleteLike(int position) {
+        List<LikeData> items = data.get(position).getLikeData();
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getUsername().equals(userData.getUserName())) {
+                items.remove(i);
+                adapter.notifyDataSetChanged();
+                return;
+            }
+        }
+    }
+
+    private int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    private int getListviewOffset(CommentConfig commentConfig) {
+        RelativeLayout titleBar = (RelativeLayout) findViewById(R.id.titlebar);
+        if(commentConfig == null)
+            return 0;
+        //这里如果你的listview上面还有其它占高度的控件，则需要减去该控件高度，listview的headview除外。
+        //int listviewOffset = mScreenHeight - mSelectCircleItemH - mCurrentKeyboardH - mEditTextBodyHeight;
+        int listviewOffset = mScreenHeight - mSelectCircleItemH - mCurrentKeyboardH - mEditTextBodyHeight - titleBar.getHeight();
+        if(commentConfig.commentType == CommentConfig.Type.REPLY){
+            //回复评论的情况
+            listviewOffset = listviewOffset + mSelectCommentItemOffset;
+        }
+        return listviewOffset;
+    }
+
+    private void measureCircleItemHighAndCommentItemOffset(CommentConfig commentConfig){
+        if(commentConfig == null)
+            return;
+
+        int firstPosition = layoutManager.findFirstVisibleItemPosition();
+        //只能返回当前可见区域（列表可滚动）的子项
+        View selectCircleItem = layoutManager.getChildAt(commentConfig.circlePosition + CircleAdapter.HEADVIEW_SIZE - firstPosition);
+
+        if(selectCircleItem != null){
+            mSelectCircleItemH = selectCircleItem.getHeight();
+        }
+
+        if(commentConfig.commentType == CommentConfig.Type.REPLY){
+            //回复评论的情况
+            CommentListView commentLv = (CommentListView) selectCircleItem.findViewById(R.id.commentList);
+            if(commentLv!=null){
+                //找到要回复的评论view,计算出该view距离所属动态底部的距离
+                View selectCommentItem = commentLv.getChildAt(commentConfig.commentPosition);
+                if(selectCommentItem != null){
+                    //选择的commentItem距选择的CircleItem底部的距离
+                    mSelectCommentItemOffset = 0;
+                    View parentView = selectCommentItem;
+                    do {
+                        int subItemBottom = parentView.getBottom();
+                        parentView = (View) parentView.getParent();
+                        if(parentView != null){
+                            mSelectCommentItemOffset += (parentView.getHeight() - subItemBottom);
+                        }
+                    } while (parentView != null && parentView != selectCircleItem);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void showLoading(String msg) {
+
+    }
+
+    @Override
+    public void hideLoading() {
+
+    }
+
+    @Override
+    public void showError(String errorMsg) {
+
+    }
 }
