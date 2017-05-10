@@ -70,10 +70,12 @@ public class LeftFragment extends Fragment implements OnClickListener {
 		case R.id.classcircle: //班级圈
 			intent.setClass(getContext(), MainActivity.class);
 			getContext().startActivity(intent);
+			getActivity().finish();
 			break;
 		case R.id.myclasscircle:// 我的班级圈
 			intent.setClass(getContext(), PersonalCircleActivity.class);
 			getContext().startActivity(intent);
+			getActivity().finish();
 			break;
 		case R.id.modifypwd: //修改密码
 			intent.setClass(getContext(), ModifyPwdActivity.class);
@@ -82,6 +84,7 @@ public class LeftFragment extends Fragment implements OnClickListener {
 		case R.id.cancellation: // 注销
 			intent.setClass(getContext(), LoginActivity.class);
 			getContext().startActivity(intent);
+			getActivity().finish();
 			break;
 		default:
 			break;

@@ -8,6 +8,7 @@ import java.util.List;
  */
 
 public class UserData {
+    private String userAccount;
     private String userName;//用户名
     private String userType;//用户类型
     private String classId;//用户班级
@@ -16,6 +17,14 @@ public class UserData {
     private String schoolId;//学校编号
     private List<ContentData> myDatas = new ArrayList<ContentData>();//个人班级圈
     private List<ContentData> classData = new ArrayList<ContentData>();//班级圈
+
+    public String getUserAccount() {
+        return userAccount;
+    }
+
+    public void setUserAccount(String userAccount) {
+        this.userAccount = userAccount;
+    }
 
     public String getSchoolId() {
         return schoolId;

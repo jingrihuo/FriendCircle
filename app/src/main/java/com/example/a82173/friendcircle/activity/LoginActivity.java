@@ -48,6 +48,7 @@ public class LoginActivity extends Activity {
                                     }else {
                                         JSONArray appUserData = user.getJSONArray("user");
                                         JSONObject appUserInfo = appUserData.getJSONObject(0);
+                                        userData.setUserAccount(appUserInfo.getString("userAccount"));
                                         userData.setUserName(appUserInfo.getString("userName"));
                                         userData.setUserType(appUserInfo.getString("userType"));
                                         userData.setClassId(appUserInfo.getString("classId"));
@@ -57,6 +58,7 @@ public class LoginActivity extends Activity {
                                         Intent intent = new Intent();
                                         intent.setClass(LoginActivity.this,MainActivity.class);
                                         startActivity(intent);
+                                        finish();
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();

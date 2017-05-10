@@ -69,7 +69,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
     private TextView thumbUp;
     private EditText Msg;
     private LinearLayout mAmLlLiuyan;
-    private static Context mContext;
+    public static Context mContext;
     private View headView;
     private InputMethodManager inputMethodManager;
     private RelativeLayout bodyLayout;

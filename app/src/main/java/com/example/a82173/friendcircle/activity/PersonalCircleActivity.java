@@ -65,8 +65,6 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
     private EditText Msg;
     private LinearLayout mAmLlLiuyan;
     private static Context mContext;
-    private View headView;
-    private Intent intent;
     private InputMethodManager inputMethodManager;
     private RelativeLayout bodyLayout;
     private ImageView topButton;
@@ -228,57 +226,11 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 mScreenHeight = screenH;//应用屏幕的高度
                 mEditTextBodyHeight = mAmLlLiuyan.getHeight();
                 if(layoutManager!=null && mCommentConfig != null){
-                    layoutManager.scrollToPositionWithOffset(mCommentConfig.circlePosition + CircleAdapter.HEADVIEW_SIZE, getListviewOffset(mCommentConfig));
+                    layoutManager.scrollToPositionWithOffset(mCommentConfig.circlePosition + CircleAdapter.HEADVIEW_SIZE, getListviewOffset(mCommentConfig)+20);
                 }
             }
         });
     }
-    private void showPopupMenu(View view) {
-        // View当前PopupMenu显示的相对View的位置
-        android.support.v7.widget.PopupMenu popupMenu = new android.support.v7.widget.PopupMenu(this, view);
-
-        // menu布局
-        popupMenu.getMenuInflater().inflate(R.menu.main, popupMenu.getMenu());
-
-        // menu的item点击事件
-        popupMenu.setOnMenuItemClickListener(new android.support.v7.widget.PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
-                    case R.id.classcircle: //班级圈
-                        intent.setClass(PersonalCircleActivity.this, MainActivity.class);
-                        startActivity(intent);
-                        break;
-                    case R.id.myclasscircle:// 我的班级圈
-                        intent.setClass(PersonalCircleActivity.this, PersonalCircleActivity.class);
-                        startActivity(intent);
-                        break;
-                    case R.id.modifypwd: //修改密码
-                        intent.setClass(PersonalCircleActivity.this, ModifyPwdActivity.class);
-                        startActivity(intent);
-                        break;
-                    case R.id.cancellation: // 注销
-                        intent.setClass(PersonalCircleActivity.this, LoginActivity.class);
-                        startActivity(intent);
-                        break;
-                    default:
-                        break;
-                }
-                return false;
-            }
-        });
-
-        // PopupMenu关闭事件
-        popupMenu.setOnDismissListener(new android.support.v7.widget.PopupMenu.OnDismissListener() {
-            @Override
-            public void onDismiss(android.support.v7.widget.PopupMenu menu) {
-                Toast.makeText(PersonalCircleActivity.this, "关闭PopupMenu", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        popupMenu.show();
-    }
-
     //评论弹窗
     @Override
     public void EditTextReplyVisible(int visibility, CommentConfig config) {
