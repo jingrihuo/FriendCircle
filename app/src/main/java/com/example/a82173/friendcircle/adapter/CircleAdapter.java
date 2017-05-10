@@ -37,7 +37,7 @@ import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 
 public class CircleAdapter extends BaseRecycleViewAdapter{
     public final static int TYPE_HEAD = 0;
-    public final static int HEADVIEW_SIZE = 0;
+    public final static int HEADVIEW_SIZE = 1;
 
     private Context context;
     private CirclePresenter circlePresenter;

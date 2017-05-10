@@ -1,6 +1,5 @@
 package com.example.a82173.friendcircle.activity;
 
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,15 +12,19 @@ import com.example.a82173.friendcircle.R;
 import com.example.a82173.friendcircle.databean.UserData;
 import com.example.a82173.friendcircle.http.HttpLogin;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class LoginActivity extends Activity {
     public static UserData userData = new UserData();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        final EditText username = (EditText)findViewById(R.id.username2);
-        final EditText password = (EditText)findViewById(R.id.password2);
-        Button login = (Button)findViewById(R.id.login2);
+        final EditText username = (EditText)findViewById(R.id.username);
+        final EditText password = (EditText)findViewById(R.id.userpwd);
+        Button login = (Button)findViewById(R.id.login);
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -35,17 +38,28 @@ public class LoginActivity extends Activity {
                             @Override
                             public void run() {
                                 String result = httpLogin.login(user,pwd);
-                                Toast.makeText(LoginActivity.this,result,Toast.LENGTH_SHORT).show();
-                                if (result.equals("success")){
-                                    userData.setUserName(user);
-                                    userData.setUserType("班主任");
-                                    Intent intent = new Intent();
-                                    intent.setClass(LoginActivity.this,MainActivity.class);
-                                    LoginActivity.this.startActivity(intent);
-                                }else if(result.equals("faild")){
-                                    Toast.makeText(LoginActivity.this,"账号密码有误",Toast.LENGTH_SHORT).show();
-                                }else{
-                                    Toast.makeText(LoginActivity.this,"当前网络状态不好或服务器故障请稍后再试",Toast.LENGTH_SHORT).show();
+                                JSONObject user = null;
+                                try {
+                                    user = new JSONObject(result);
+                                    if (!user.getString("check").equals("classcircle-server")){
+                                        Toast.makeText(LoginActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                                    }else if (!user.getString("error").isEmpty()){
+                                        Toast.makeText(LoginActivity.this,user.getString("error"),Toast.LENGTH_SHORT).show();
+                                    }else {
+                                        JSONArray appUserData = user.getJSONArray("user");
+                                        JSONObject appUserInfo = appUserData.getJSONObject(0);
+                                        userData.setUserName(appUserInfo.getString("userName"));
+                                        userData.setUserType(appUserInfo.getString("userType"));
+                                        userData.setClassId(appUserInfo.getString("classId"));
+                                        userData.setSchoolId(appUserInfo.getString("schoolId"));
+                                        userData.setUserBG(appUserInfo.getString("userCoverSrc"));
+                                        userData.setUserHeadBg(appUserInfo.getString("userHeadSrc"));
+                                        Intent intent = new Intent();
+                                        intent.setClass(LoginActivity.this,MainActivity.class);
+                                        startActivity(intent);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
                                 }
                             }
                         });

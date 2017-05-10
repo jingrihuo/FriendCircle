@@ -14,7 +14,7 @@ import java.net.URL;
 import static com.example.a82173.friendcircle.http.HttpParsing.getStringFromInputStream;
 
 public class HttpLogin {
-    String LoginSevlet = "http://192.168.1.27:8080/ClassCircle/clienttest?method=login";
+    String LoginSevlet = "http://192.168.1.16:8080/ClassCircle/clientservlet?method=login";
 
     public String login(String username,String password){
         String result = "null";
@@ -27,24 +27,20 @@ public class HttpLogin {
             urlConnection.setRequestProperty("Charset", "UTF-8");
             // 设置容许输出
             urlConnection.setDoOutput(true);
-
             //把上面访问方式改为异步操作,就不会出现 android.os.NetworkOnMainThreadException异常
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
-
-//            String data = "un=" + username + "&pw=" + password;
             // 获得一个输出流，向服务器写数据，默认情况下，不允许程序向服务器输出数据
-            JSONObject test = new JSONObject();
-            test.put("check1","Android");
-            test.put("check2","Server");
+            JSONObject check = new JSONObject();
+            check.put("check","classcircle-android");
             JSONArray user = new JSONArray();
             JSONObject usertest = new JSONObject();
             usertest.put("userAccount",username);
-            usertest.put("userPassword",password);
+            usertest.put("userPwd",password);
             user.put(usertest);
-            test.put("results",user);
+            check.put("user",user);
             OutputStream os = urlConnection.getOutputStream();
-            os.write(test.toString().getBytes());
+            os.write(check.toString().getBytes());
             os.flush();
             os.close();
 

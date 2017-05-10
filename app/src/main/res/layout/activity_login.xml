@@ -12,42 +12,43 @@
     tools:context="com.example.a82173.friendcircle.activity.LoginActivity">
 
     <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
+        android:id="@+id/userpwd"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/username"
+        android:hint="密码"
+        android:inputType="textPersonName" />
+
+    <EditText
+        android:id="@+id/username"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/imageView3"
+        android:layout_marginTop="9dp"
         android:hint="账号"
-        android:ems="10"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/username2" />
+        android:inputType="textPersonName" />
 
     <ImageView
-        android:layout_width="480px"
-        android:layout_height="480px"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
         android:src="@drawable/bg_personal2"
         android:id="@+id/imageView3"
         android:layout_gravity="center"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="33dp" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:hint="密码"
-        android:ems="10"
-        android:id="@+id/password2"
-        android:layout_below="@+id/username2"
-        android:layout_alignStart="@+id/username2"
-        android:layout_marginTop="18dp" />
+        android:layout_marginTop="56dp" />
 
     <Button
-        android:text="登录"
-        android:layout_width="wrap_content"
+        android:id="@+id/login"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/login2"
-        android:layout_below="@+id/password2"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="54dp" />
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/userpwd"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/shape"
+        android:textColor="#FFFFFF"
+        android:text="登录" />
+
 </RelativeLayout>

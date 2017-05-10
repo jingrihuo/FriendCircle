@@ -4,9 +4,6 @@ import java.util.List;
 
 import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 
-/**
- * Created by SunFly on 2016/10/27.
- */
 public class ContentData {
     private List<Integer> images;
     private String username;

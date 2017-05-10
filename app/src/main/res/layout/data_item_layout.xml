@@ -18,6 +18,7 @@
             android:layout_height="wrap_content"
             android:text="断桥残雪"
             android:id="@+id/username"
+            android:textSize="16sp"
             android:textColor="#7992dd" />
 
         <com.example.a82173.friendcircle.view.MagicTextView

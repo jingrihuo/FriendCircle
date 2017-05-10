@@ -1,11 +1,24 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/classcircle"
         android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
-
-
-
+        android:title="班级圈"
+        app:showAsAction="never"/>
+    <item
+        android:id="@id/myclasscircle"
+        android:orderInCategory="100"
+        android:title="我的班级圈"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/modifypwd"
+        android:orderInCategory="100"
+        android:title="修改密码"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/cancellation"
+        android:orderInCategory="100"
+        android:title="注销"
+        app:showAsAction="never"/>
 </menu>

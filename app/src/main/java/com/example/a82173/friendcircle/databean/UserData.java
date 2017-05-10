@@ -1,5 +1,8 @@
 package com.example.a82173.friendcircle.databean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by yuritian on 2017/4/10.
  */
@@ -10,6 +13,33 @@ public class UserData {
     private String classId;//用户班级
     private String userHeadBg;//用户头像
     private String userBG;//用户背景
+    private String schoolId;//学校编号
+    private List<ContentData> myDatas = new ArrayList<ContentData>();//个人班级圈
+    private List<ContentData> classData = new ArrayList<ContentData>();//班级圈
+
+    public String getSchoolId() {
+        return schoolId;
+    }
+
+    public void setSchoolId(String schoolId) {
+        this.schoolId = schoolId;
+    }
+
+    public List<ContentData> getMyDatas() {
+        return myDatas;
+    }
+
+    public void setMyDatas(List<ContentData> myDatas) {
+        this.myDatas = myDatas;
+    }
+
+    public List<ContentData> getClassData() {
+        return classData;
+    }
+
+    public void setClassData(List<ContentData> classData) {
+        this.classData = classData;
+    }
 
     public String getUserType() {
         return userType;

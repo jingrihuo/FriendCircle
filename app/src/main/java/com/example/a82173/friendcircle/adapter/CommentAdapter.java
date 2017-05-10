@@ -1,7 +1,6 @@
 package com.example.a82173.friendcircle.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -10,8 +9,6 @@ import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -20,18 +17,13 @@ import android.widget.Toast;
 
 
 import com.example.a82173.friendcircle.R;
-import com.example.a82173.friendcircle.activity.MainActivity;
 import com.example.a82173.friendcircle.activity.MyApplication;
 import com.example.a82173.friendcircle.databean.ComentData;
 import com.example.a82173.friendcircle.span.CircleMovementMethod;
-import com.example.a82173.friendcircle.span.SpannableClickable;
 import com.example.a82173.friendcircle.view.CommentListView;
 
 import java.util.ArrayList;
-import java.util.FormatFlagsConversionMismatchException;
 import java.util.List;
-
-import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
 
 public class CommentAdapter {
 
@@ -112,8 +104,8 @@ public class CommentAdapter {
         String contentBodyStr = bean.getContent();
         builder.append(contentBodyStr);
         commentTv.setText(builder);
-
         commentTv.setMovementMethod(circleMovementMethod);
+
         commentTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -143,7 +135,7 @@ public class CommentAdapter {
         subjectSpanText.setSpan(new ClickableSpan() {
                                     @Override
                                     public void onClick(View widget) {
-
+                                        Toast.makeText(mContext,textStr,Toast.LENGTH_LONG).show();
                                     }
                                     @Override
                                     public void updateDrawState(TextPaint ds) {
