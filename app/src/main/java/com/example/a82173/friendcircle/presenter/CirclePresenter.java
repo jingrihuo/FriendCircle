@@ -21,4 +21,8 @@ public class CirclePresenter extends BasePresenter<ICircleView> {
     public void deleteLike(int position){
         getView().deleteLike(position);
     }
+
+    public void deleteComment(int position,int comId){
+        getView().deleteComment(position,comId);
+    }
 }

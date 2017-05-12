@@ -5,13 +5,32 @@ package com.example.a82173.friendcircle.databean;
  */
 public class ComentData {
     private String username;
+    private String userAccount;
     private String content;
     private String replyUsername;
+    private int comId;
+
 
     public ComentData(String username, String content, String replyUsername) {
         this.username = username;
         this.content = content;
         this.replyUsername = replyUsername;
+    }
+
+    public String getUserAccount() {
+        return userAccount;
+    }
+
+    public void setUserAccount(String userAccount) {
+        this.userAccount = userAccount;
+    }
+
+    public int getComId() {
+        return comId;
+    }
+
+    public void setComId(int comId) {
+        this.comId = comId;
     }
 
     public String getUsername() {

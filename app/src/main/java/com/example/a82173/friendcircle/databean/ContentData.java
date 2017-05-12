@@ -85,7 +85,7 @@ public class ContentData {
         boolean result = false;
         if(this.likeData!=null){
             for (LikeData item : this.likeData){
-                if (userData.getUserName().equals(item.getUsername()))
+                if (userData.getUserAccount().equals(item.getUserAccount()))
                     result = true;
             }
         }

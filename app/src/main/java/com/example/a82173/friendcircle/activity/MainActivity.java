@@ -1,7 +1,6 @@
 package com.example.a82173.friendcircle.activity;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.annotation.SuppressLint;;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
@@ -10,13 +9,12 @@ import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 
@@ -28,7 +26,9 @@ import com.example.a82173.friendcircle.databean.ComentData;
 import com.example.a82173.friendcircle.databean.CommentConfig;
 import com.example.a82173.friendcircle.databean.ContentData;
 import com.example.a82173.friendcircle.databean.LikeData;
+import com.example.a82173.friendcircle.databean.UserData;
 import com.example.a82173.friendcircle.http.HttpDynamic;
+import com.example.a82173.friendcircle.http.HttpLogin;
 import com.example.a82173.friendcircle.presenter.CirclePresenter;
 import com.example.a82173.friendcircle.presenter.view.ICircleView;
 import com.bumptech.glide.Glide;
@@ -57,6 +57,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
     private int mCurrentKeyboardH;
     private int mSelectCircleItemH;
     private int mSelectCommentItemOffset;
+    private static int comId = -1;
 
     private CirclePresenter mPresenter;
     private CircleAdapter adapter;
@@ -74,6 +75,8 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
     private InputMethodManager inputMethodManager;
     private RelativeLayout bodyLayout;
     private ImageView topButton;
+    private ImageView classcircleadd;
+    private Button reply;
 
     private List<ContentData> data = new ArrayList<ContentData>();
     private HttpDynamic httpDynamic = new HttpDynamic();
@@ -88,7 +91,60 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
         mAmLlLiuyan = (LinearLayout) findViewById(R.id.comments);
         mReply = (EditText) findViewById(R.id.et_msg);
         //点击回复触发回复功能
-        Button huifu = (Button) findViewById(R.id.btn_save);
+        reply = (Button) findViewById(R.id.btn_save);
+        reply.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String content = mReply.getText().toString().trim();
+                if (TextUtils.isEmpty(content)){
+                    Toast.makeText(MainActivity.this,"评论内容不可为空...",Toast.LENGTH_SHORT).show();
+                } else if (mCommentConfig.commentType == CommentConfig.Type.PUBLIC){
+                    addComment(userData.getClassData().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,"");
+                    if (comId != -1) {
+                        List comentDatas = userData.getClassData().get(mCommentConfig.circlePosition).getComentDatas();
+                        if (comentDatas == null) {
+                            comentDatas = new ArrayList();
+                            ComentData comentData = new ComentData(userData.getUserName(), content, null);
+                            comentData.setComId(comId);
+                            comId=-1;
+                            comentDatas.add(comentData);
+                            userData.getClassData().get(mCommentConfig.circlePosition).setComentDatas(comentDatas);
+                        } else {
+                            ComentData comentData = new ComentData(userData.getUserName(), content, null);
+                            comentData.setComId(comId);
+                            comId = -1;
+                            comentDatas.add(comentData);
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                    EditTextReplyVisible(View.GONE, null);
+                    mReply.setText("");
+                }else {
+                    addComment(userData.getClassData().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,mCommentConfig.replyUserAccont);
+                    if (comId != -1) {
+                        List comentDatas = userData.getClassData().get(mCommentConfig.circlePosition).getComentDatas();
+                        ComentData comentData = new ComentData(userData.getUserName(), content, mCommentConfig.replyUser);
+                        comentData.setComId(comId);
+                        comId = -1;
+                        comentDatas.add(comentData);
+                        adapter.notifyDataSetChanged();
+                        EditTextReplyVisible(View.GONE, null);
+                        mReply.setText("");
+                    }
+                }
+            }
+        });
+
+        classcircleadd = (ImageView) findViewById(R.id.classcircle_add);
+        classcircleadd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent  = new Intent();
+                intent.setClass(MainActivity.this,NewFriendCircle.class);
+                startActivity(intent);
+            }
+        });
+
         topButton = (ImageView) findViewById(R.id.usermenu);
         topButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,6 +152,8 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                 toggle();
             }
         });
+
+
 
         initView();
         initSlidingMenu();
@@ -129,46 +187,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        String dynamic = httpDynamic.loadClasscircle();
-                        JSONObject classcircle = null;
-                        try {
-                            classcircle = new JSONObject(dynamic);
-                            if (!classcircle.getString("check").equals("classcircle-server")){
-                                Toast.makeText(MainActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
-                            }else if (!classcircle.getString("error").isEmpty()) {
-                                Toast.makeText(MainActivity.this, classcircle.getString("error"), Toast.LENGTH_SHORT).show();
-                            }else {
-                                JSONArray classDynamics = classcircle.getJSONArray("dynamic");
-                                for (int i = 0;i<classDynamics.length();i++){
-                                    JSONObject classDynamic = classDynamics.getJSONObject(i);
-                                    ContentData contentData = new ContentData(classDynamic.getString("userName"), classDynamic.getString("dynamicText"));
-                                    JSONArray likeDatas = classDynamic.getJSONArray("dynamicUp");
-                                    if (likeDatas.length()!=0) {
-                                        List likeData = new ArrayList();
-                                        for (int j = 0; j < likeDatas.length(); j++) {
-                                            likeData.add(new LikeData(likeDatas.getJSONObject(j).getString("userName")));
-                                        }
-                                        contentData.setLikeData(likeData);
-                                    }
-                                    JSONArray commitDatas = classDynamic.getJSONArray("commitment");
-                                    if (commitDatas.length()!=0) {
-                                        List comentData = new ArrayList();
-                                        for (int j = 0; j < commitDatas.length(); j++) {
-                                            JSONObject comment = commitDatas.getJSONObject(j);
-                                            if (comment.getString("comUserName").isEmpty()) {
-                                                comentData.add(new ComentData(comment.getString("userName"), comment.getString("comText"), null));
-                                            } else {
-                                                comentData.add(new ComentData(comment.getString("userName"), comment.getString("comText"), comment.getString("comUserName")));
-                                            }
-                                        }
-                                        contentData.setComentDatas(comentData);
-                                    }
-                                    userData.getClassData().add(contentData);
-                                }
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        loadDynamic();
                         adapter.notifyDataSetChanged();
                         classCircleView.setRefreshing(false);
                     }
@@ -207,44 +226,62 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
         adapter = new CircleAdapter(this);
         adapter.setCirclePresenter(mPresenter);
         classCircleView.setAdapter(adapter);
-        //initDatas();
+        loadDynamic();
         adapter.setDatas(userData.getClassData());
         adapter.notifyDataSetChanged();
         setViewTreeObserver();
     }
 
-    //加载朋友圈内容
-    private void initDatas() {
-        Random random = new Random();
-        for (int i = 0; i < 10; i++) {
-            ContentData contentData = new ContentData("DeathBefall", "测试测试");
-            List likeDatas = new ArrayList();
-            int likeSize = random.nextInt(6);
-            if (likeSize > 0) {
-                likeDatas.add(new LikeData("点赞"));
-                contentData.setLikeData(likeDatas);
-                for (int j = 1; j < likeSize; j++) {
-                    contentData.getLikeData().add(new LikeData("点赞"));
-                }
-            }
-            List comentDatas = new ArrayList();
-            int comentSize = random.nextInt(6);
-            if (comentSize > 0) {
-                comentDatas.add(new ComentData("DeathBefall", "测试", null));
-                for (int j = 1; j < likeSize; j++) {
-                    int reply = random.nextInt(2);
-                    if (reply == 0) {
-                        comentDatas.add(new ComentData("DeathBefall", "测试", null));
-                    } else {
-                        comentDatas.add(new ComentData("DeathBefall", "测试", "测试"));
+    private void loadDynamic(){
+        userData.getClassData().clear();
+        String dynamic = httpDynamic.loadClasscircle();
+        JSONObject classcircle = null;
+        try {
+            classcircle = new JSONObject(dynamic);
+            if (!classcircle.getString("check").equals("classcircle-server")){
+                Toast.makeText(MainActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+            }else if (!classcircle.getString("error").isEmpty()) {
+                Toast.makeText(MainActivity.this, classcircle.getString("error"), Toast.LENGTH_SHORT).show();
+            }else {
+                JSONArray classDynamics = classcircle.getJSONArray("dynamic");
+                for (int i = 0;i<classDynamics.length();i++){
+                    JSONObject classDynamic = classDynamics.getJSONObject(i);
+                    ContentData contentData = new ContentData(classDynamic.getString("userName"), classDynamic.getString("dynamicText"));
+                    contentData.setMegnumber(classDynamic.getInt("dynamicId"));
+                    JSONArray likeDatas = classDynamic.getJSONArray("dynamicUp");
+                    if (likeDatas.length()!=0) {
+                        List likeData = new ArrayList();
+                        for (int j = 0; j < likeDatas.length(); j++) {
+                            likeData.add(new LikeData(likeDatas.getJSONObject(j).getString("userName"),likeDatas.getJSONObject(j).getString("userAccount")));
+                        }
+                        contentData.setLikeData(likeData);
                     }
+                    JSONArray commitDatas = classDynamic.getJSONArray("commitment");
+                    if (commitDatas.length()!=0) {
+                        List comentData = new ArrayList();
+                        for (int j = 0; j < commitDatas.length(); j++) {
+                            JSONObject comment = commitDatas.getJSONObject(j);
+                            ComentData mComentData;
+                            if (comment.getString("comUserName").isEmpty()) {
+                                mComentData = new ComentData(comment.getString("userName"), comment.getString("comText"), null);
+                                mComentData.setComId(comment.getInt("comId"));
+                                mComentData.setUserAccount(comment.getString("userAccount"));
+                                comentData.add(mComentData);
+                            } else {
+                                mComentData = new ComentData(comment.getString("userName"), comment.getString("comText"), comment.getString("comUserName"));
+                                mComentData.setComId(comment.getInt("comId"));
+                                mComentData.setUserAccount(comment.getString("userAccount"));
+                                comentData.add(mComentData);
+                            }
+                        }
+                        contentData.setComentDatas(comentData);
+                    }
+                    userData.getClassData().add(contentData);
                 }
-                contentData.setComentDatas(comentDatas);
             }
-            data.add(contentData);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-        adapter.setDatas(data);
-
     }
 
     private void setViewTreeObserver() {
@@ -295,27 +332,134 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
     }
 
     @Override
-    public void addLike(int position) {
-        if (data.get(position).getLikeData() == null) {
-            List likeDatas = new ArrayList();
-            likeDatas.add(new LikeData(userData.getUserName()));
-            data.get(position).setLikeData(likeDatas);
-        } else {
-            data.get(position).getLikeData().add(new LikeData(userData.getUserName()));
-        }
-        adapter.notifyDataSetChanged();
+    public void addLike(final int position) {
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.addDynamicLike(userData.getClassData().get(position).getMegnumber(),userData.getUserAccount());
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(MainActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(MainActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                                if (userData.getClassData().get(position).getLikeData() == null) {
+                                    List likeDatas = new ArrayList();
+                                    likeDatas.add(new LikeData(userData.getUserName(),userData.getUserAccount()));
+                                    userData.getClassData().get(position).setLikeData(likeDatas);
+                                } else {
+                                    userData.getClassData().get(position).getLikeData().add(new LikeData(userData.getUserName(),userData.getUserAccount()));
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override
-    public void deleteLike(int position) {
-        List<LikeData> items = data.get(position).getLikeData();
-        for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).getUsername().equals(userData.getUserName())) {
-                items.remove(i);
-                adapter.notifyDataSetChanged();
-                return;
+    public void deleteLike(final int position) {
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.deleteDynamicLike(userData.getClassData().get(position).getMegnumber(),userData.getUserAccount());
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(MainActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(MainActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                                List<LikeData> items = userData.getClassData().get(position).getLikeData();
+                                for (int i = 0; i < items.size(); i++) {
+                                    if (items.get(i).getUserAccount().equals(userData.getUserAccount())) {
+                                        items.remove(i);
+                                        break;
+                                    }
+                                }
+                                if (items.size() == 0){
+                                    userData.getClassData().get(position).setLikeData(null);
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
-        }
+        }).start();
+    }
+
+    @Override
+    public void deleteComment(final int position, final int comId) {
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.deleteDynamicComment(comId);
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(MainActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(MainActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                                List<ComentData> delete = userData.getClassData().get(position).getComentDatas();
+                                for (int i = 0;i<delete.size();i++){
+                                    if (delete.get(i).getComId() == comId){
+                                        delete.remove(i);
+                                        break;
+                                    }
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
+
+    public void addComment(final int dynamicId, final String userAccount, final String comText, final String comUserId){
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.replyClasscircle(dynamicId,userAccount,comText,comUserId);
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(MainActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(MainActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                               comId = commentResult.getInt("comId");
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 
     private int getStatusBarHeight() {

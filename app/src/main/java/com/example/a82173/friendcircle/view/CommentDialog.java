@@ -70,12 +70,20 @@ public class CommentDialog extends Dialog implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.copy:
-                ClipboardManager clipboardManager = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
-                clipboardManager.setText(comentDataUser.getContent());
+                if (comentDataUser!=null) {
+                    ClipboardManager clipboardManager = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                    clipboardManager.setText(comentDataUser.getContent());
+                }
                 dismiss();
                 break;
             case R.id.delete:
+                if (mPresenter != null && comentDataUser != null) {
+                    mPresenter.deleteComment(mCirclePosition, comentDataUser.getComId());
+                }
                 dismiss();
+                break;
+            default:
+                break;
         }
     }
 }

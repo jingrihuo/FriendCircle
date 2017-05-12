@@ -83,6 +83,7 @@
             />
 
         <EditText
+            android:layout_marginTop="16dp"
             android:id="@+id/userpwd"
             android:layout_width="match_parent"
             android:layout_height="48dp"

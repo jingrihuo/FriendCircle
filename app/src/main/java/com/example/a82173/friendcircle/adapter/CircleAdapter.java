@@ -126,6 +126,9 @@ public class CircleAdapter extends BaseRecycleViewAdapter{
                             like.addView(likeItem);
                         }
                     }
+                }else {
+                    AutoWrapLineLayout like = (AutoWrapLineLayout) holder.likeOrComent.findViewById(R.id.like);
+                    like.removeAllViews();
                 }
                 if (data.getComentDatas() != null) {
                     holder.commentList.setOnItemClick(new CommentListView.OnItemClickListener() {
@@ -133,14 +136,15 @@ public class CircleAdapter extends BaseRecycleViewAdapter{
                         public void onItemClick(int position) {
                             ComentData comentData = data.getComentDatas().get(position);
                             if (userData.getUserName().equals(comentData.getUsername())) {
-                                CommentDialog dialog = new CommentDialog(context, comentData, circlePresenter, circlePosition);
+                                CommentDialog dialog = new CommentDialog(context, comentData, circlePresenter,circlePosition);
                                 dialog.show();
                             } else {
                                 CommentConfig config = new CommentConfig();
                                 config.circlePosition = circlePosition;
                                 config.commentPosition = position;
                                 config.commentType = CommentConfig.Type.REPLY;
-                                config.replyUser = comentData.getReplyUsername();
+                                config.replyUserAccont = comentData.getUserAccount();
+                                config.replyUser = comentData.getUsername();
                                 circlePresenter.showReplyEditText(config);
                             }
                         }
@@ -149,7 +153,7 @@ public class CircleAdapter extends BaseRecycleViewAdapter{
                         @Override
                         public void onItemLongClick(int position) {
                             ComentData comentData = data.getComentDatas().get(position);
-                            CommentDialog dialog = new CommentDialog(context, comentData, circlePresenter, circlePosition);
+                            CommentDialog dialog = new CommentDialog(context, comentData, circlePresenter,circlePosition);
                             dialog.show();
                         }
                     });

@@ -15,5 +15,6 @@ public class CommentConfig {
     public int commentPosition;
     public Type commentType;
     public String replyUser;
+    public String replyUserAccont;
 
 }

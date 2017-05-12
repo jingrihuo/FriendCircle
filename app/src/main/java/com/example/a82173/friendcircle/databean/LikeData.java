@@ -5,9 +5,19 @@ package com.example.a82173.friendcircle.databean;
  */
 public class LikeData {
     private String username;
+    private String userAccount;
 
-    public LikeData(String username) {
+    public LikeData(String username, String userAccount) {
         this.username = username;
+        this.userAccount = userAccount;
+    }
+
+    public String getUserAccount() {
+        return userAccount;
+    }
+
+    public void setUserAccount(String userAccount) {
+        this.userAccount = userAccount;
     }
 
     public String getUsername() {

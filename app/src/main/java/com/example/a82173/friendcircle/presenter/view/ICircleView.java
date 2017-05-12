@@ -10,4 +10,5 @@ public interface ICircleView extends IBaseView{
     public void EditTextReplyVisible(int visibility, CommentConfig config);
     public void addLike(int position);
     public void deleteLike(int position);
+    public void deleteComment(int position,int comId);
 }

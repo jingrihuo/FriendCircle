@@ -163,43 +163,8 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
         adapter = new CircleAdapter(this);
         adapter.setCirclePresenter(mPresenter);
         classCircleView.setAdapter(adapter);
-        initDatas();
         adapter.notifyDataSetChanged();
         setViewTreeObserver();
-    }
-
-    //加载朋友圈内容
-    private void initDatas() {
-        Random random = new Random();
-        for (int i = 0; i < 10; i++) {
-            ContentData contentData = new ContentData("DeathBefall", "测试测试");
-            List likeDatas = new ArrayList();
-            int likeSize = random.nextInt(6);
-            if (likeSize > 0) {
-                likeDatas.add(new LikeData("点赞"));
-                contentData.setLikeData(likeDatas);
-                for (int j = 1; j < likeSize; j++) {
-                    contentData.getLikeData().add(new LikeData("点赞"));
-                }
-            }
-            List comentDatas = new ArrayList();
-            int comentSize = random.nextInt(6);
-            if (comentSize > 0) {
-                comentDatas.add(new ComentData("DeathBefall", "测试", null));
-                for (int j = 1; j < likeSize; j++) {
-                    int reply = random.nextInt(2);
-                    if (reply == 0) {
-                        comentDatas.add(new ComentData("DeathBefall", "测试", null));
-                    } else {
-                        comentDatas.add(new ComentData("DeathBefall", "测试", "测试"));
-                    }
-                }
-                contentData.setComentDatas(comentDatas);
-            }
-            data.add(contentData);
-        }
-        adapter.setDatas(data);
-
     }
 
     private void setViewTreeObserver() {
@@ -250,14 +215,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
 
     @Override
     public void addLike(int position) {
-        if (data.get(position).getLikeData() == null) {
-            List likeDatas = new ArrayList();
-            likeDatas.add(new LikeData(userData.getUserName()));
-            data.get(position).setLikeData(likeDatas);
-        } else {
-            data.get(position).getLikeData().add(new LikeData(userData.getUserName()));
-        }
-        adapter.notifyDataSetChanged();
+
     }
 
     @Override
@@ -270,6 +228,11 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 return;
             }
         }
+    }
+
+    @Override
+    public void deleteComment(int position, int comId) {
+
     }
 
     private int getStatusBarHeight() {
