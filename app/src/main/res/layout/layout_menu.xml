@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/biz_news_local_weather_bg_big"
+    android:background="#232323"
     android:orientation="vertical" >
 
     <RelativeLayout
@@ -80,6 +80,56 @@
         android:paddingLeft="16dp"
         android:paddingRight="10dp"
         android:text="修改密码"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/biz_pc_account_line" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:clickable="true"
+        android:drawablePadding="1dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="10dp"
+        android:text="学校资讯"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/biz_pc_account_line" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:clickable="true"
+        android:drawablePadding="1dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="10dp"
+        android:text="教育资讯"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/biz_pc_account_line" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:clickable="true"
+        android:drawablePadding="1dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="10dp"
+        android:text="论坛"
         android:textColor="@color/white"
         android:textSize="20sp" />
 

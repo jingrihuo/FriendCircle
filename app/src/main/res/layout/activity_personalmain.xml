@@ -22,7 +22,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="14dp"
             android:gravity="center"
-            android:text="班级圈"
+            android:text="我的班级圈"
             android:textSize="24dp"
             android:textColor="#FFF"/>
 

@@ -53,8 +53,12 @@ public class LoginActivity extends Activity {
                                         userData.setUserType(appUserInfo.getString("userType"));
                                         userData.setClassId(appUserInfo.getString("classId"));
                                         userData.setSchoolId(appUserInfo.getString("schoolId"));
-                                        userData.setUserBG(appUserInfo.getString("userCoverSrc"));
-                                        userData.setUserHeadBg(appUserInfo.getString("userHeadSrc"));
+                                        if (!appUserInfo.getString("userCoverSrc").equals("")){
+                                            userData.setUserBG(appUserInfo.getString("userCoverSrc"));
+                                        }
+                                        if (!appUserInfo.getString("userHeadSrc").equals("")){
+                                            userData.setUserHeadBg(appUserInfo.getString("userHeadSrc"));
+                                        }
                                         Intent intent = new Intent();
                                         intent.setClass(LoginActivity.this,MainActivity.class);
                                         startActivity(intent);

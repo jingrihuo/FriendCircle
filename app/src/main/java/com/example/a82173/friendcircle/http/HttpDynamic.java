@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 import static com.example.a82173.friendcircle.http.HttpParsing.getStringFromInputStream;
 
 /**
@@ -38,8 +39,8 @@ public class HttpDynamic {
             // 获得一个输出流，向服务器写数据，默认情况下，不允许程序向服务器输出数据
             JSONObject loadDynamic = new JSONObject();
             loadDynamic.put("check","classcircle-android");
-            loadDynamic.put("schoolId", LoginActivity.userData.getSchoolId());
-            loadDynamic.put("classId", LoginActivity.userData.getClassId());
+            loadDynamic.put("schoolId", userData.getSchoolId());
+            loadDynamic.put("classId", userData.getClassId());
             loadDynamic.put("dynamicId", 0);
             OutputStream os = urlConnection.getOutputStream();
             os.write(loadDynamic.toString().getBytes());

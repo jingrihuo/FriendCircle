@@ -4,11 +4,14 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.*;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -28,6 +31,8 @@ import com.example.a82173.friendcircle.databean.ComentData;
 import com.example.a82173.friendcircle.databean.CommentConfig;
 import com.example.a82173.friendcircle.databean.ContentData;
 import com.example.a82173.friendcircle.databean.LikeData;
+import com.example.a82173.friendcircle.http.HttpDynamic;
+import com.example.a82173.friendcircle.http.HttpImage;
 import com.example.a82173.friendcircle.presenter.CirclePresenter;
 import com.example.a82173.friendcircle.presenter.view.ICircleView;
 import com.bumptech.glide.Glide;
@@ -38,9 +43,15 @@ import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 import com.malinskiy.superrecyclerview.SuperRecyclerView;
 import com.malinskiy.superrecyclerview.OnMoreListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import me.iwf.photopicker.PhotoPicker;
 
 import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 
@@ -52,6 +63,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
     private int mCurrentKeyboardH;
     private int mSelectCircleItemH;
     private int mSelectCommentItemOffset;
+    private static int comId = -1;
 
     private CirclePresenter mPresenter;
     private CircleAdapter adapter;
@@ -64,13 +76,16 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
     private TextView thumbUp;
     private EditText Msg;
     private LinearLayout mAmLlLiuyan;
-    private static Context mContext;
+    public static Context mContext;
+    private View headView;
     private InputMethodManager inputMethodManager;
     private RelativeLayout bodyLayout;
     private ImageView topButton;
+    private ImageView classcircleadd;
+    private Button reply;
 
     private List<ContentData> data = new ArrayList<ContentData>();
-
+    private HttpDynamic httpDynamic = new HttpDynamic();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,10 +96,62 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
         mContext = this;
         mAmLlLiuyan = (LinearLayout) findViewById(R.id.comments);
         mReply = (EditText) findViewById(R.id.et_msg);
-        userData.setUserType("班主任");
-        userData.setUserName("Death");
         //点击回复触发回复功能
-        Button huifu = (Button) findViewById(R.id.btn_save);
+        reply = (Button) findViewById(R.id.btn_save);
+        reply.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String content = mReply.getText().toString().trim();
+                if (TextUtils.isEmpty(content)){
+                    Toast.makeText(PersonalCircleActivity.this,"评论内容不可为空...",Toast.LENGTH_SHORT).show();
+                } else if (mCommentConfig.commentType == CommentConfig.Type.PUBLIC){
+                    addComment(userData.getMyDatas().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,"");
+                    if (comId != -1) {
+                        List comentDatas = userData.getMyDatas().get(mCommentConfig.circlePosition).getComentDatas();
+                        if (comentDatas == null) {
+                            comentDatas = new ArrayList();
+                            ComentData comentData = new ComentData(userData.getUserName(), content, null);
+                            comentData.setComId(comId);
+                            comId=-1;
+                            comentDatas.add(comentData);
+                            userData.getMyDatas().get(mCommentConfig.circlePosition).setComentDatas(comentDatas);
+                        } else {
+                            ComentData comentData = new ComentData(userData.getUserName(), content, null);
+                            comentData.setComId(comId);
+                            comId = -1;
+                            comentDatas.add(comentData);
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                    EditTextReplyVisible(View.GONE, null);
+                    mReply.setText("");
+                }else {
+                    addComment(userData.getMyDatas().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,mCommentConfig.replyUserAccont);
+                    if (comId != -1) {
+                        List comentDatas = userData.getMyDatas().get(mCommentConfig.circlePosition).getComentDatas();
+                        ComentData comentData = new ComentData(userData.getUserName(), content, mCommentConfig.replyUser);
+                        comentData.setComId(comId);
+                        comId = -1;
+                        comentDatas.add(comentData);
+                        adapter.notifyDataSetChanged();
+                        EditTextReplyVisible(View.GONE, null);
+                        mReply.setText("");
+                    }
+                }
+            }
+        });
+
+        classcircleadd = (ImageView) findViewById(R.id.classcircle_add);
+        classcircleadd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(PersonalCircleActivity.this, NewFriendCircle.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
         topButton = (ImageView) findViewById(R.id.usermenu);
         topButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,6 +159,9 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 toggle();
             }
         });
+
+
+
         initView();
         initSlidingMenu();
     }
@@ -124,7 +194,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        adapter.getDatas().addAll(data);
+                        loadDynamic();
                         adapter.notifyDataSetChanged();
                         classCircleView.setRefreshing(false);
                     }
@@ -138,7 +208,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        adapter.getDatas().addAll(data);
+                        adapter.getDatas().addAll(userData.getMyDatas());
                         adapter.notifyDataSetChanged();
                     }
                 }, 2000);
@@ -160,11 +230,76 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 Glide.with(PersonalCircleActivity.this).resumeRequests();
             }
         });
-        adapter = new CircleAdapter(this);
+        adapter = new CircleAdapter(this,this);
+        adapter.TYPE_Activity = 0;
         adapter.setCirclePresenter(mPresenter);
         classCircleView.setAdapter(adapter);
+        loadDynamic();
+        adapter.setDatas(userData.getMyDatas());
         adapter.notifyDataSetChanged();
         setViewTreeObserver();
+    }
+
+    private void loadDynamic(){
+        userData.getMyDatas().clear();
+        String dynamic = httpDynamic.loadClasscircle();
+        JSONObject classcircle = null;
+        try {
+            classcircle = new JSONObject(dynamic);
+            if (!classcircle.getString("check").equals("classcircle-server")){
+                Toast.makeText(PersonalCircleActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+            }else if (!classcircle.getString("error").isEmpty()) {
+                Toast.makeText(PersonalCircleActivity.this, classcircle.getString("error"), Toast.LENGTH_SHORT).show();
+            }else {
+                JSONArray classDynamics = classcircle.getJSONArray("dynamic");
+                for (int i = 0;i<classDynamics.length();i++){
+                    JSONObject classDynamic = classDynamics.getJSONObject(i);
+                    if (classDynamic.getString("userName").equals(userData.getUserName())) {
+                        ContentData contentData = new ContentData(classDynamic.getString("userName"), classDynamic.getString("dynamicText"));
+                        contentData.setMegnumber(classDynamic.getInt("dynamicId"));
+                        JSONArray Dynamicimgs = classDynamic.getJSONArray("dynamicSrc");
+                        if (Dynamicimgs.length() != 0) {
+                            List Dynamicimg = new ArrayList();
+                            for (int j = 0; j < Dynamicimgs.length(); j++) {
+                                Dynamicimg.add(Dynamicimgs.getJSONObject(j).getString("src"));
+                            }
+                            contentData.setImages(Dynamicimg);
+                        }
+                        JSONArray likeDatas = classDynamic.getJSONArray("dynamicUp");
+                        if (likeDatas.length() != 0) {
+                            List likeData = new ArrayList();
+                            for (int j = 0; j < likeDatas.length(); j++) {
+                                likeData.add(new LikeData(likeDatas.getJSONObject(j).getString("userName"), likeDatas.getJSONObject(j).getString("userAccount")));
+                            }
+                            contentData.setLikeData(likeData);
+                        }
+                        JSONArray commitDatas = classDynamic.getJSONArray("commitment");
+                        if (commitDatas.length() != 0) {
+                            List comentData = new ArrayList();
+                            for (int j = 0; j < commitDatas.length(); j++) {
+                                JSONObject comment = commitDatas.getJSONObject(j);
+                                ComentData mComentData;
+                                if (comment.getString("comUserName").isEmpty()) {
+                                    mComentData = new ComentData(comment.getString("userName"), comment.getString("comText"), null);
+                                    mComentData.setComId(comment.getInt("comId"));
+                                    mComentData.setUserAccount(comment.getString("userAccount"));
+                                    comentData.add(mComentData);
+                                } else {
+                                    mComentData = new ComentData(comment.getString("userName"), comment.getString("comText"), comment.getString("comUserName"));
+                                    mComentData.setComId(comment.getInt("comId"));
+                                    mComentData.setUserAccount(comment.getString("userAccount"));
+                                    comentData.add(mComentData);
+                                }
+                            }
+                            contentData.setComentDatas(comentData);
+                        }
+                        userData.getMyDatas().add(contentData);
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void setViewTreeObserver() {
@@ -191,11 +326,12 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 mScreenHeight = screenH;//应用屏幕的高度
                 mEditTextBodyHeight = mAmLlLiuyan.getHeight();
                 if(layoutManager!=null && mCommentConfig != null){
-                    layoutManager.scrollToPositionWithOffset(mCommentConfig.circlePosition + CircleAdapter.HEADVIEW_SIZE, getListviewOffset(mCommentConfig)+20);
+                    layoutManager.scrollToPositionWithOffset(mCommentConfig.circlePosition + CircleAdapter.HEADVIEW_SIZE, getListviewOffset(mCommentConfig));
                 }
             }
         });
     }
+
     //评论弹窗
     @Override
     public void EditTextReplyVisible(int visibility, CommentConfig config) {
@@ -214,25 +350,134 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
     }
 
     @Override
-    public void addLike(int position) {
-
-    }
-
-    @Override
-    public void deleteLike(int position) {
-        List<LikeData> items = data.get(position).getLikeData();
-        for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).getUsername().equals(userData.getUserName())) {
-                items.remove(i);
-                adapter.notifyDataSetChanged();
-                return;
+    public void addLike(final int position) {
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                PersonalCircleActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.addDynamicLike(userData.getMyDatas().get(position).getMegnumber(),userData.getUserAccount());
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(PersonalCircleActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(PersonalCircleActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                                if (userData.getMyDatas().get(position).getLikeData() == null) {
+                                    List likeDatas = new ArrayList();
+                                    likeDatas.add(new LikeData(userData.getUserName(),userData.getUserAccount()));
+                                    userData.getMyDatas().get(position).setLikeData(likeDatas);
+                                } else {
+                                    userData.getMyDatas().get(position).getLikeData().add(new LikeData(userData.getUserName(),userData.getUserAccount()));
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
-        }
+        }).start();
     }
 
     @Override
-    public void deleteComment(int position, int comId) {
+    public void deleteLike(final int position) {
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                PersonalCircleActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.deleteDynamicLike(userData.getMyDatas().get(position).getMegnumber(),userData.getUserAccount());
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(PersonalCircleActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(PersonalCircleActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                                List<LikeData> items = userData.getMyDatas().get(position).getLikeData();
+                                for (int i = 0; i < items.size(); i++) {
+                                    if (items.get(i).getUserAccount().equals(userData.getUserAccount())) {
+                                        items.remove(i);
+                                        break;
+                                    }
+                                }
+                                if (items.size() == 0){
+                                    userData.getMyDatas().get(position).setLikeData(null);
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
 
+    @Override
+    public void deleteComment(final int position, final int comId) {
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                PersonalCircleActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.deleteDynamicComment(comId);
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(PersonalCircleActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(PersonalCircleActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                                List<ComentData> delete = userData.getMyDatas().get(position).getComentDatas();
+                                for (int i = 0;i<delete.size();i++){
+                                    if (delete.get(i).getComId() == comId){
+                                        delete.remove(i);
+                                        break;
+                                    }
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
+
+    public void addComment(final int dynamicId, final String userAccount, final String comText, final String comUserId){
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                PersonalCircleActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.replyClasscircle(dynamicId,userAccount,comText,comUserId);
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(PersonalCircleActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(PersonalCircleActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                                comId = commentResult.getInt("comId");
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 
     private int getStatusBarHeight() {
@@ -258,32 +503,32 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
         return listviewOffset;
     }
 
-    private void measureCircleItemHighAndCommentItemOffset(CommentConfig commentConfig) {
-        if (commentConfig == null)
+    private void measureCircleItemHighAndCommentItemOffset(CommentConfig commentConfig){
+        if(commentConfig == null)
             return;
 
         int firstPosition = layoutManager.findFirstVisibleItemPosition();
         //只能返回当前可见区域（列表可滚动）的子项
         View selectCircleItem = layoutManager.getChildAt(commentConfig.circlePosition + CircleAdapter.HEADVIEW_SIZE - firstPosition);
 
-        if (selectCircleItem != null) {
+        if(selectCircleItem != null){
             mSelectCircleItemH = selectCircleItem.getHeight();
         }
 
-        if (commentConfig.commentType == CommentConfig.Type.REPLY) {
+        if(commentConfig.commentType == CommentConfig.Type.REPLY){
             //回复评论的情况
             CommentListView commentLv = (CommentListView) selectCircleItem.findViewById(R.id.commentList);
-            if (commentLv != null) {
+            if(commentLv!=null){
                 //找到要回复的评论view,计算出该view距离所属动态底部的距离
                 View selectCommentItem = commentLv.getChildAt(commentConfig.commentPosition);
-                if (selectCommentItem != null) {
+                if(selectCommentItem != null){
                     //选择的commentItem距选择的CircleItem底部的距离
                     mSelectCommentItemOffset = 0;
                     View parentView = selectCommentItem;
                     do {
                         int subItemBottom = parentView.getBottom();
                         parentView = (View) parentView.getParent();
-                        if (parentView != null) {
+                        if(parentView != null){
                             mSelectCommentItemOffset += (parentView.getHeight() - subItemBottom);
                         }
                     } while (parentView != null && parentView != selectCircleItem);
@@ -291,6 +536,10 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
             }
         }
     }
+
+    /**
+     * 初始化侧边栏
+     */
     private void initSlidingMenu() {
 
         // 设置左侧滑动菜单
@@ -314,9 +563,49 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
         sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
         // 设置下方视图的在滚动时的缩放比例
         sm.setBehindScrollScale(0.0f);
-
     }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
+        if (resultCode == RESULT_OK && requestCode == PhotoPicker.REQUEST_CODE) {
+            if (data != null) {
+                HttpImage httpImage = new HttpImage();
+                ArrayList<String> photos;
+                photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
+                if (adapter.TYPE_IMG == 1){
+                    Bitmap bitmap = BitmapFactory.decodeFile(photos.get(0));
+                    String result = httpImage.uploadBgImg(bitmap);
+                    try {
+                        JSONObject loadHeadImgResult = new JSONObject(result);
+                        if (!loadHeadImgResult.getString("check").equals("classcircle-server")){
+                            Toast.makeText(PersonalCircleActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                        }else if (!loadHeadImgResult.getString("error").isEmpty()){
+                            Toast.makeText(PersonalCircleActivity.this,loadHeadImgResult.getString("error"),Toast.LENGTH_SHORT).show();
+                        }else {
+                            adapter.headView.setImageBitmap(bitmap);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }else {
+                    Bitmap bitmap = BitmapFactory.decodeFile(photos.get(0));
+                    String result = httpImage.uploadHeadImg(bitmap);
+                    try {
+                        JSONObject loadHeadImgResult = new JSONObject(result);
+                        if (!loadHeadImgResult.getString("check").equals("classcircle-server")){
+                            Toast.makeText(PersonalCircleActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                        }else if (!loadHeadImgResult.getString("error").isEmpty()){
+                            Toast.makeText(PersonalCircleActivity.this,loadHeadImgResult.getString("error"),Toast.LENGTH_SHORT).show();
+                        }else {
+                            adapter.bgView.setImageBitmap(bitmap);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
 
     @Override
     public void showLoading(String msg) {

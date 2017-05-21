@@ -5,13 +5,22 @@ import java.util.List;
 import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 
 public class ContentData {
-    private List<Integer> images;
+    private List<String> images;
     private String username;
     private String content;
     private String createTime;
     private List<LikeData> likeData;
     private List<ComentData> comentDatas;
     private int megnumber;
+    private String hgSrc;
+
+    public String getHgSrc() {
+        return hgSrc;
+    }
+
+    public void setHgSrc(String hgSrc) {
+        this.hgSrc = hgSrc;
+    }
 
     public String getCreateTime() {
         return createTime;
@@ -50,18 +59,18 @@ public class ContentData {
         this.content = content;
     }
 
-    public ContentData(List<Integer> images, String username, String content) {
+    public ContentData(List<String> images, String username, String content) {
         this.images = images;
         this.username = username;
         this.content = content;
     }
 
-    public List<Integer> getImages() {
+    public List<String> getImages() {
 
         return images;
     }
 
-    public void setImages(List<Integer> images) {
+    public void setImages(List<String> images) {
         this.images = images;
     }
 

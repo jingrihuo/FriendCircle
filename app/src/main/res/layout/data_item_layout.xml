@@ -39,7 +39,6 @@
             android:paddingRight="0dp"
             android:paddingBottom="0dp"
             android:layout_marginRight="50dp">
-
         </FrameLayout>
 
         <LinearLayout

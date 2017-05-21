@@ -3,13 +3,17 @@ package com.example.a82173.friendcircle.activity;
 import android.annotation.SuppressLint;;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +32,7 @@ import com.example.a82173.friendcircle.databean.ContentData;
 import com.example.a82173.friendcircle.databean.LikeData;
 import com.example.a82173.friendcircle.databean.UserData;
 import com.example.a82173.friendcircle.http.HttpDynamic;
+import com.example.a82173.friendcircle.http.HttpImage;
 import com.example.a82173.friendcircle.http.HttpLogin;
 import com.example.a82173.friendcircle.presenter.CirclePresenter;
 import com.example.a82173.friendcircle.presenter.view.ICircleView;
@@ -46,6 +51,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import me.iwf.photopicker.PhotoPicker;
 
 import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 
@@ -139,9 +146,10 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
         classcircleadd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent  = new Intent();
-                intent.setClass(MainActivity.this,NewFriendCircle.class);
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, NewFriendCircle.class);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -223,7 +231,8 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                 Glide.with(MainActivity.this).resumeRequests();
             }
         });
-        adapter = new CircleAdapter(this);
+        adapter = new CircleAdapter(this,this);
+        adapter.TYPE_Activity = 0;
         adapter.setCirclePresenter(mPresenter);
         classCircleView.setAdapter(adapter);
         loadDynamic();
@@ -248,6 +257,14 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                     JSONObject classDynamic = classDynamics.getJSONObject(i);
                     ContentData contentData = new ContentData(classDynamic.getString("userName"), classDynamic.getString("dynamicText"));
                     contentData.setMegnumber(classDynamic.getInt("dynamicId"));
+                    JSONArray Dynamicimgs = classDynamic.getJSONArray("dynamicSrc");
+                    if (Dynamicimgs.length()!=0){
+                        List Dynamicimg = new ArrayList();
+                        for (int j = 0; j < Dynamicimgs.length(); j++) {
+                            Dynamicimg.add(Dynamicimgs.getJSONObject(j).getString("src"));
+                        }
+                        contentData.setImages(Dynamicimg);
+                    }
                     JSONArray likeDatas = classDynamic.getJSONArray("dynamicUp");
                     if (likeDatas.length()!=0) {
                         List likeData = new ArrayList();
@@ -545,6 +562,48 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
         sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
         // 设置下方视图的在滚动时的缩放比例
         sm.setBehindScrollScale(0.0f);
+    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && requestCode == PhotoPicker.REQUEST_CODE) {
+            if (data != null) {
+                HttpImage httpImage = new HttpImage();
+                ArrayList<String> photos;
+                photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
+                if (adapter.TYPE_IMG == 1){
+                    Bitmap bitmap = BitmapFactory.decodeFile(photos.get(0));
+                    String result = httpImage.uploadBgImg(bitmap);
+                    try {
+                        JSONObject loadHeadImgResult = new JSONObject(result);
+                        if (!loadHeadImgResult.getString("check").equals("classcircle-server")){
+                            Toast.makeText(MainActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                        }else if (!loadHeadImgResult.getString("error").isEmpty()){
+                            Toast.makeText(MainActivity.this,loadHeadImgResult.getString("error"),Toast.LENGTH_SHORT).show();
+                        }else {
+                            adapter.headView.setImageBitmap(bitmap);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }else {
+                    Bitmap bitmap = BitmapFactory.decodeFile(photos.get(0));
+                    String result = httpImage.uploadHeadImg(bitmap);
+                    try {
+                        JSONObject loadHeadImgResult = new JSONObject(result);
+                        if (!loadHeadImgResult.getString("check").equals("classcircle-server")){
+                            Toast.makeText(MainActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                        }else if (!loadHeadImgResult.getString("error").isEmpty()){
+                            Toast.makeText(MainActivity.this,loadHeadImgResult.getString("error"),Toast.LENGTH_SHORT).show();
+                        }else {
+                            adapter.bgView.setImageBitmap(bitmap);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     @Override
