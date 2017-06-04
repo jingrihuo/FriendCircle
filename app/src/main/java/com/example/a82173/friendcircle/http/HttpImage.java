@@ -29,7 +29,7 @@ import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
  */
 
 public class HttpImage {
-    String sevlet = "http://192.168.1.16:8080/ClassCircle/clientservlet";
+    String sevlet = "http://192.168.1.10:8080/ClassCircle/clientservlet";
     public String uploadImgs(ArrayList<Bitmap> bitmaps){
         String result = "null";
         try {
@@ -141,7 +141,7 @@ public class HttpImage {
     }
 
     public Bitmap loadDynamicImgs(String path,String type){
-        String imgSrc = "http://192.168.1.16:8080/ClassCircle"+ type + path;
+        String imgSrc = "http://192.168.1.10:8080/ClassCircle"+ type + path;
         Bitmap result = null;
         try {
             URL url = new URL(imgSrc);

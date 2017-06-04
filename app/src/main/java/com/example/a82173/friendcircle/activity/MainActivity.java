@@ -51,6 +51,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import me.iwf.photopicker.PhotoPicker;
 
@@ -85,6 +87,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
     private ImageView classcircleadd;
     private Button reply;
 
+    private ExecutorService mExecutorService;
     private List<ContentData> data = new ArrayList<ContentData>();
     private HttpDynamic httpDynamic = new HttpDynamic();
 
@@ -94,6 +97,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
         setContentView(R.layout.activity_main);
         mPresenter = new CirclePresenter();
         mPresenter.attachView(this);
+        mExecutorService = Executors.newSingleThreadExecutor();
         mContext = this;
         mAmLlLiuyan = (LinearLayout) findViewById(R.id.comments);
         mReply = (EditText) findViewById(R.id.et_msg);
@@ -106,16 +110,16 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                 if (TextUtils.isEmpty(content)){
                     Toast.makeText(MainActivity.this,"评论内容不可为空...",Toast.LENGTH_SHORT).show();
                 } else if (mCommentConfig.commentType == CommentConfig.Type.PUBLIC){
-                    addComment(userData.getClassData().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,"");
+                    addComment(userData.getClassDatas().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,"");
                     if (comId != -1) {
-                        List comentDatas = userData.getClassData().get(mCommentConfig.circlePosition).getComentDatas();
+                        List comentDatas = userData.getClassDatas().get(mCommentConfig.circlePosition).getComentDatas();
                         if (comentDatas == null) {
                             comentDatas = new ArrayList();
                             ComentData comentData = new ComentData(userData.getUserName(), content, null);
                             comentData.setComId(comId);
                             comId=-1;
                             comentDatas.add(comentData);
-                            userData.getClassData().get(mCommentConfig.circlePosition).setComentDatas(comentDatas);
+                            userData.getClassDatas().get(mCommentConfig.circlePosition).setComentDatas(comentDatas);
                         } else {
                             ComentData comentData = new ComentData(userData.getUserName(), content, null);
                             comentData.setComId(comId);
@@ -127,9 +131,9 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                     EditTextReplyVisible(View.GONE, null);
                     mReply.setText("");
                 }else {
-                    addComment(userData.getClassData().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,mCommentConfig.replyUserAccont);
+                    addComment(userData.getClassDatas().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,mCommentConfig.replyUserAccont);
                     if (comId != -1) {
-                        List comentDatas = userData.getClassData().get(mCommentConfig.circlePosition).getComentDatas();
+                        List comentDatas = userData.getClassDatas().get(mCommentConfig.circlePosition).getComentDatas();
                         ComentData comentData = new ComentData(userData.getUserName(), content, mCommentConfig.replyUser);
                         comentData.setComId(comId);
                         comId = -1;
@@ -195,7 +199,6 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        loadDynamic();
                         adapter.notifyDataSetChanged();
                         classCircleView.setRefreshing(false);
                     }
@@ -209,7 +212,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        adapter.getDatas().addAll(userData.getClassData());
+                        adapter.getDatas().addAll(userData.getClassDatas());
                         adapter.notifyDataSetChanged();
                     }
                 }, 2000);
@@ -236,13 +239,13 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
         adapter.setCirclePresenter(mPresenter);
         classCircleView.setAdapter(adapter);
         loadDynamic();
-        adapter.setDatas(userData.getClassData());
+        adapter.setDatas(userData.getClassDatas());
         adapter.notifyDataSetChanged();
         setViewTreeObserver();
     }
 
     private void loadDynamic(){
-        userData.getClassData().clear();
+        userData.getClassDatas().clear();
         String dynamic = httpDynamic.loadClasscircle();
         JSONObject classcircle = null;
         try {
@@ -293,7 +296,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                         }
                         contentData.setComentDatas(comentData);
                     }
-                    userData.getClassData().add(contentData);
+                    userData.getClassDatas().add(contentData);
                 }
             }
         } catch (JSONException e) {
@@ -350,13 +353,13 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
 
     @Override
     public void addLike(final int position) {
-        new Thread(new Runnable(){
+        mExecutorService.execute(new Runnable(){
             @Override
             public void run() {
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        String result = httpDynamic.addDynamicLike(userData.getClassData().get(position).getMegnumber(),userData.getUserAccount());
+                        String result = httpDynamic.addDynamicLike(userData.getClassDatas().get(position).getMegnumber(),userData.getUserAccount());
                         try {
                             JSONObject commentResult = new JSONObject(result);
                             if (!commentResult.getString("check").equals("classcircle-server")){
@@ -364,12 +367,12 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                             }else if (!commentResult.getString("error").isEmpty()){
                                 Toast.makeText(MainActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
                             }else {
-                                if (userData.getClassData().get(position).getLikeData() == null) {
+                                if (userData.getClassDatas().get(position).getLikeData() == null) {
                                     List likeDatas = new ArrayList();
                                     likeDatas.add(new LikeData(userData.getUserName(),userData.getUserAccount()));
-                                    userData.getClassData().get(position).setLikeData(likeDatas);
+                                    userData.getClassDatas().get(position).setLikeData(likeDatas);
                                 } else {
-                                    userData.getClassData().get(position).getLikeData().add(new LikeData(userData.getUserName(),userData.getUserAccount()));
+                                    userData.getClassDatas().get(position).getLikeData().add(new LikeData(userData.getUserName(),userData.getUserAccount()));
                                 }
                                 adapter.notifyDataSetChanged();
                             }
@@ -379,18 +382,18 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                     }
                 });
             }
-        }).start();
+        });
     }
 
     @Override
     public void deleteLike(final int position) {
-        new Thread(new Runnable(){
+        mExecutorService.execute(new Runnable(){
             @Override
             public void run() {
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        String result = httpDynamic.deleteDynamicLike(userData.getClassData().get(position).getMegnumber(),userData.getUserAccount());
+                        String result = httpDynamic.deleteDynamicLike(userData.getClassDatas().get(position).getMegnumber(),userData.getUserAccount());
                         try {
                             JSONObject commentResult = new JSONObject(result);
                             if (!commentResult.getString("check").equals("classcircle-server")){
@@ -398,7 +401,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                             }else if (!commentResult.getString("error").isEmpty()){
                                 Toast.makeText(MainActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
                             }else {
-                                List<LikeData> items = userData.getClassData().get(position).getLikeData();
+                                List<LikeData> items = userData.getClassDatas().get(position).getLikeData();
                                 for (int i = 0; i < items.size(); i++) {
                                     if (items.get(i).getUserAccount().equals(userData.getUserAccount())) {
                                         items.remove(i);
@@ -406,7 +409,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                                     }
                                 }
                                 if (items.size() == 0){
-                                    userData.getClassData().get(position).setLikeData(null);
+                                    userData.getClassDatas().get(position).setLikeData(null);
                                 }
                                 adapter.notifyDataSetChanged();
                             }
@@ -416,12 +419,12 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                     }
                 });
             }
-        }).start();
+        });
     }
 
     @Override
     public void deleteComment(final int position, final int comId) {
-        new Thread(new Runnable(){
+        mExecutorService.execute(new Runnable(){
             @Override
             public void run() {
                 MainActivity.this.runOnUiThread(new Runnable() {
@@ -435,7 +438,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                             }else if (!commentResult.getString("error").isEmpty()){
                                 Toast.makeText(MainActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
                             }else {
-                                List<ComentData> delete = userData.getClassData().get(position).getComentDatas();
+                                List<ComentData> delete = userData.getClassDatas().get(position).getComentDatas();
                                 for (int i = 0;i<delete.size();i++){
                                     if (delete.get(i).getComId() == comId){
                                         delete.remove(i);
@@ -450,11 +453,11 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                     }
                 });
             }
-        }).start();
+        });
     }
 
     public void addComment(final int dynamicId, final String userAccount, final String comText, final String comUserId){
-        new Thread(new Runnable(){
+        mExecutorService.execute(new Runnable(){
             @Override
             public void run() {
                 MainActivity.this.runOnUiThread(new Runnable() {
@@ -476,7 +479,7 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
                     }
                 });
             }
-        }).start();
+        });
     }
 
     private int getStatusBarHeight() {

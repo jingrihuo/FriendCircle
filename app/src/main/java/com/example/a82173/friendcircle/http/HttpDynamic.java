@@ -20,7 +20,7 @@ import static com.example.a82173.friendcircle.http.HttpParsing.getStringFromInpu
  */
 
 public class HttpDynamic {
-    String sevlet = "http://192.168.1.16:8080/ClassCircle/clientservlet";
+    String sevlet = "http://192.168.1.10:8080/ClassCircle/clientservlet";
     public String loadClasscircle(){
         String result = null;
         try {

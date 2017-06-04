@@ -2,6 +2,8 @@ package com.example.a82173.friendcircle.databean;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by yuritian on 2017/4/10.
@@ -16,7 +18,15 @@ public class UserData {
     private String userBG;//用户背景
     private String schoolId;//学校编号
     private List<ContentData> myDatas = new ArrayList<ContentData>();//个人班级圈
-    private List<ContentData> classData = new ArrayList<ContentData>();//班级圈
+    private List<ContentData> classDatas = new ArrayList<ContentData>();//班级圈
+
+    public List<ContentData> getClassDatas() {
+        return classDatas;
+    }
+
+    public void setClassDatas(List<ContentData> classDatas) {
+        this.classDatas = classDatas;
+    }
 
     public String getUserAccount() {
         return userAccount;
@@ -40,14 +50,6 @@ public class UserData {
 
     public void setMyDatas(List<ContentData> myDatas) {
         this.myDatas = myDatas;
-    }
-
-    public List<ContentData> getClassData() {
-        return classData;
-    }
-
-    public void setClassData(List<ContentData> classData) {
-        this.classData = classData;
     }
 
     public String getUserType() {

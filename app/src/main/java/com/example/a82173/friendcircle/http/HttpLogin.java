@@ -14,7 +14,7 @@ import java.net.URL;
 import static com.example.a82173.friendcircle.http.HttpParsing.getStringFromInputStream;
 
 public class HttpLogin {
-    String sevlet = "http://192.168.1.16:8080/ClassCircle/clientservlet";
+    String sevlet = "http://192.168.1.10:8080/ClassCircle/clientservlet";
 
     public String login(String username,String password){
         String result = "null";

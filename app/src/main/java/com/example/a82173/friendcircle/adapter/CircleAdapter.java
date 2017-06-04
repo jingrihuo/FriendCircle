@@ -3,8 +3,6 @@ package com.example.a82173.friendcircle.adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.support.v7.internal.widget.ActivityChooserModel;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,9 +17,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.a82173.friendcircle.R;
-import com.example.a82173.friendcircle.activity.MainActivity;
-import com.example.a82173.friendcircle.activity.MyApplication;
-import com.example.a82173.friendcircle.activity.NewFriendCircle;
 import com.example.a82173.friendcircle.customerwidget.AutoWrapLineLayout;
 import com.example.a82173.friendcircle.databean.ComentData;
 import com.example.a82173.friendcircle.databean.CommentConfig;
@@ -33,10 +28,7 @@ import com.example.a82173.friendcircle.popup.TitlePopup;
 import com.example.a82173.friendcircle.presenter.CirclePresenter;
 import com.example.a82173.friendcircle.view.CommentDialog;
 import com.example.a82173.friendcircle.view.CommentListView;
-import com.example.a82173.friendcircle.view.GlideCircleTransform;
 import com.example.a82173.friendcircle.view.MagicTextView;
-
-import java.util.List;
 
 import me.iwf.photopicker.PhotoPicker;
 
