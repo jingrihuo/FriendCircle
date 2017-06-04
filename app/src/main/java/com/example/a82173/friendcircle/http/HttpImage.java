@@ -140,37 +140,6 @@ public class HttpImage {
         return result;
     }
 
-    public Bitmap loadDynamicImgs(String path,String type){
-        String imgSrc = "http://192.168.1.10:8080/ClassCircle"+ type + path;
-        Bitmap result = null;
-        try {
-            URL url = new URL(imgSrc);
-            //3:获取客户端和服务器的连接对象，此时还没有建立连接
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            //4:初始化连接对象
-            conn.setRequestMethod("GET");
-            //设置连接超时
-            conn.setConnectTimeout(5000);
-            //设置读取超时
-            conn.setReadTimeout(5000);
-            //5:发生请求，与服务器建立连接
-            conn.connect();
-            //如果响应码为200，说明请求成功
-            if(conn.getResponseCode() == 200)
-            {
-                //获取服务器响应头中的流
-                InputStream is = conn.getInputStream();
-                result = BitmapFactory.decodeStream(is);
-            }
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-
-
     public static String getStringFromInputStream(InputStream is) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];

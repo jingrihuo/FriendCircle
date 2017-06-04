@@ -10,9 +10,12 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.a82173.friendcircle.http.HttpImage;
 
 import java.util.List;
+
+import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 
 /**
  * Created by SunFly on 2016/10/27.
@@ -48,11 +51,10 @@ public class GridImageAdapter extends BaseAdapter {
     public View getView(final int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             ImageView imageView = new ImageView(context);
-            bitmap = httpImage.loadDynamicImgs(data.get(position),"/file/");
-            imageView.setImageBitmap(bitmap);
+            Glide.with(context).load("http://192.168.1.10:8080/ClassCircle/file/"+ data.get(position)).into(imageView);
             imageView.setScaleType(ImageView.ScaleType.FIT_XY);
             imageView.setPadding(5, 5, 5, 5);
-            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(dip2px(context, 70), dip2px(context,70));
+            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(dip2px(context, 88), dip2px(context,88));
             imageView.setLayoutParams(params);
             convertView = imageView;
         }

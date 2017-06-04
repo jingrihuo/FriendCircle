@@ -14,6 +14,7 @@ public class CirclePresenter extends BasePresenter<ICircleView> {
         getView().EditTextReplyVisible(View.VISIBLE,config);
     }
 
+
     public void addLike(int position){
         getView().addLike(position);
     }
@@ -24,5 +25,9 @@ public class CirclePresenter extends BasePresenter<ICircleView> {
 
     public void deleteComment(int position,int comId){
         getView().deleteComment(position,comId);
+    }
+
+    public void deleteDynamic(int position){
+        getView().deleteDynamic(position);
     }
 }

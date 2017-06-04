@@ -456,6 +456,34 @@ public class MainActivity extends SlidingFragmentActivity implements ICircleView
         });
     }
 
+    @Override
+    public void deleteDynamic(final int position) {
+        mExecutorService.execute(new Runnable(){
+            @Override
+            public void run() {
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.deleteDynamic(position);
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(MainActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(MainActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                                loadDynamic();
+                                adapter.notifyDataSetChanged();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     public void addComment(final int dynamicId, final String userAccount, final String comText, final String comUserId){
         mExecutorService.execute(new Runnable(){
             @Override

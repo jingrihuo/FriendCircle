@@ -11,4 +11,5 @@ public interface ICircleView extends IBaseView{
     public void addLike(int position);
     public void deleteLike(int position);
     public void deleteComment(int position,int comId);
+    public void deleteDynamic(int position);
 }

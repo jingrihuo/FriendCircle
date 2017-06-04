@@ -103,7 +103,7 @@ public class HttpDynamic {
         return result;
     }
 
-    public String deleteDynamic(String dynamicId){
+    public String deleteDynamic(int dynamicId){
         String result = null;
         try {
             String loadSevlet = sevlet+"?method=deletedynamic";

@@ -34,12 +34,12 @@ public class LoginActivity extends Activity {
                         final String user = username.getText().toString();
                         final String pwd = password.getText().toString();
                         final HttpLogin httpLogin = new HttpLogin();
+                        final String result = httpLogin.login(user,pwd);
                         LoginActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                String result = httpLogin.login(user,pwd);
-                                JSONObject user = null;
                                 try {
+                                    JSONObject user = null;
                                     user = new JSONObject(result);
                                     if (!user.getString("check").equals("classcircle-server")){
                                         Toast.makeText(LoginActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();

@@ -3,6 +3,7 @@ package com.example.a82173.friendcircle.adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +23,7 @@ import com.example.a82173.friendcircle.databean.ComentData;
 import com.example.a82173.friendcircle.databean.CommentConfig;
 import com.example.a82173.friendcircle.databean.ContentData;
 import com.example.a82173.friendcircle.databean.LikeData;
+import com.example.a82173.friendcircle.http.HttpDynamic;
 import com.example.a82173.friendcircle.http.HttpImage;
 import com.example.a82173.friendcircle.popup.ActionItem;
 import com.example.a82173.friendcircle.popup.TitlePopup;
@@ -49,8 +51,7 @@ public class CircleAdapter extends BaseRecycleViewAdapter {
     private Context context;
     private Activity activity;
     private CirclePresenter circlePresenter;
-    private HttpImage httpImage = new HttpImage();
-    private static Bitmap bitmap;
+    private HttpDynamic httpDynamic = new HttpDynamic();
 
 
     public CircleAdapter(Context context,Activity activity) {
@@ -88,10 +89,10 @@ public class CircleAdapter extends BaseRecycleViewAdapter {
             HeaderViewHolder holder = (HeaderViewHolder) viewHolder;
             holder.userName.setText(userData.getUserName());
             if (userData.getUserBG()!=null){
-                headView.setImageBitmap(httpImage.loadDynamicImgs(userData.getUserBG(),"/cover/"));
+                Glide.with(context).load("http://192.168.1.10:8080/ClassCircle/cover/"+ userData.getUserBG()).into(headView);
             }
             if (userData.getUserHeadBg()!=null){
-                bgView.setImageBitmap(httpImage.loadDynamicImgs(userData.getUserHeadBg(),"/head/"));
+                Glide.with(context).load("http://192.168.1.10:8080/ClassCircle/head/"+ userData.getUserHeadBg()).into(bgView);
             }
             if (TYPE_Activity == 0){
                 headView.setOnClickListener(new View.OnClickListener() {
@@ -140,7 +141,7 @@ public class CircleAdapter extends BaseRecycleViewAdapter {
             holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    circlePresenter.deleteDynamic(data.getMegnumber());
                 }
             });
             if (data.isLike()) {
@@ -177,24 +178,9 @@ public class CircleAdapter extends BaseRecycleViewAdapter {
                     holder.contentImgs.setVisibility(View.VISIBLE);
                 } else if (data.getImages().size() == 1) {
                     ImageView image = new ImageView(context);
-                    bitmap = httpImage.loadDynamicImgs(data.getImages().get(0),"/file/");
+                    Glide.with(context).load("http://192.168.1.10:8080/ClassCircle/file/"+ data.getImages().get(0)).into(image);
                     image.setLeft(0);
-                    image.setImageBitmap(bitmap);
                     ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    image.setScaleType(ImageView.ScaleType.FIT_XY);
-                    int dwidth = bitmap.getWidth();
-                    int dheighet = bitmap.getHeight();
-                    if (dheighet > dwidth) {
-                        int theighet = dip2px(context, 180);
-                        int twidth = theighet * dheighet / dwidth;
-                        params.height = theighet;
-                        params.width = twidth;
-                    } else {
-                        int twidth = dip2px(context, 180);
-                        int theight = twidth * dheighet / dwidth;
-                        params.height = theight;
-                        params.width = twidth;
-                    }
                     image.setLayoutParams(params);
                     holder.contentImgs.removeAllViews();
                     holder.contentImgs.addView(image);

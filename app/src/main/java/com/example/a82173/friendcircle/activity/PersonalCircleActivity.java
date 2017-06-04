@@ -50,6 +50,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import me.iwf.photopicker.PhotoPicker;
 
@@ -57,7 +59,6 @@ import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
 
 
 public class PersonalCircleActivity extends SlidingFragmentActivity implements ICircleView,View.OnClickListener{
-
     private int mScreenHeight;
     private int mEditTextBodyHeight;
     private int mCurrentKeyboardH;
@@ -73,6 +74,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
     private CommentConfig mCommentConfig;
 
     private EditText mReply;
+    private TextView title;
     private TextView thumbUp;
     private EditText Msg;
     private LinearLayout mAmLlLiuyan;
@@ -84,6 +86,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
     private ImageView classcircleadd;
     private Button reply;
 
+    private ExecutorService mExecutorService;
     private List<ContentData> data = new ArrayList<ContentData>();
     private HttpDynamic httpDynamic = new HttpDynamic();
 
@@ -93,7 +96,10 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
         setContentView(R.layout.activity_main);
         mPresenter = new CirclePresenter();
         mPresenter.attachView(this);
+        mExecutorService = Executors.newSingleThreadExecutor();
         mContext = this;
+        title = (TextView) findViewById(R.id.appname);
+        title.setText("我的朋友圈");
         mAmLlLiuyan = (LinearLayout) findViewById(R.id.comments);
         mReply = (EditText) findViewById(R.id.et_msg);
         //点击回复触发回复功能
@@ -105,16 +111,16 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 if (TextUtils.isEmpty(content)){
                     Toast.makeText(PersonalCircleActivity.this,"评论内容不可为空...",Toast.LENGTH_SHORT).show();
                 } else if (mCommentConfig.commentType == CommentConfig.Type.PUBLIC){
-                    addComment(userData.getMyDatas().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,"");
+                    addComment(userData.getClassDatas().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,"");
                     if (comId != -1) {
-                        List comentDatas = userData.getMyDatas().get(mCommentConfig.circlePosition).getComentDatas();
+                        List comentDatas = userData.getClassDatas().get(mCommentConfig.circlePosition).getComentDatas();
                         if (comentDatas == null) {
                             comentDatas = new ArrayList();
                             ComentData comentData = new ComentData(userData.getUserName(), content, null);
                             comentData.setComId(comId);
                             comId=-1;
                             comentDatas.add(comentData);
-                            userData.getMyDatas().get(mCommentConfig.circlePosition).setComentDatas(comentDatas);
+                            userData.getClassDatas().get(mCommentConfig.circlePosition).setComentDatas(comentDatas);
                         } else {
                             ComentData comentData = new ComentData(userData.getUserName(), content, null);
                             comentData.setComId(comId);
@@ -126,9 +132,9 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                     EditTextReplyVisible(View.GONE, null);
                     mReply.setText("");
                 }else {
-                    addComment(userData.getMyDatas().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,mCommentConfig.replyUserAccont);
+                    addComment(userData.getClassDatas().get(mCommentConfig.circlePosition).getMegnumber(),userData.getUserAccount(),content,mCommentConfig.replyUserAccont);
                     if (comId != -1) {
-                        List comentDatas = userData.getMyDatas().get(mCommentConfig.circlePosition).getComentDatas();
+                        List comentDatas = userData.getClassDatas().get(mCommentConfig.circlePosition).getComentDatas();
                         ComentData comentData = new ComentData(userData.getUserName(), content, mCommentConfig.replyUser);
                         comentData.setComId(comId);
                         comId = -1;
@@ -194,7 +200,6 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        loadDynamic();
                         adapter.notifyDataSetChanged();
                         classCircleView.setRefreshing(false);
                     }
@@ -241,7 +246,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
     }
 
     private void loadDynamic(){
-        userData.getMyDatas().clear();
+        userData.getClassDatas().clear();
         String dynamic = httpDynamic.loadClasscircle();
         JSONObject classcircle = null;
         try {
@@ -254,45 +259,45 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                 JSONArray classDynamics = classcircle.getJSONArray("dynamic");
                 for (int i = 0;i<classDynamics.length();i++){
                     JSONObject classDynamic = classDynamics.getJSONObject(i);
-                    if (classDynamic.getString("userName").equals(userData.getUserName())) {
-                        ContentData contentData = new ContentData(classDynamic.getString("userName"), classDynamic.getString("dynamicText"));
-                        contentData.setMegnumber(classDynamic.getInt("dynamicId"));
-                        JSONArray Dynamicimgs = classDynamic.getJSONArray("dynamicSrc");
-                        if (Dynamicimgs.length() != 0) {
-                            List Dynamicimg = new ArrayList();
-                            for (int j = 0; j < Dynamicimgs.length(); j++) {
-                                Dynamicimg.add(Dynamicimgs.getJSONObject(j).getString("src"));
-                            }
-                            contentData.setImages(Dynamicimg);
+                    ContentData contentData = new ContentData(classDynamic.getString("userName"), classDynamic.getString("dynamicText"));
+                    contentData.setMegnumber(classDynamic.getInt("dynamicId"));
+                    JSONArray Dynamicimgs = classDynamic.getJSONArray("dynamicSrc");
+                    if (Dynamicimgs.length()!=0){
+                        List Dynamicimg = new ArrayList();
+                        for (int j = 0; j < Dynamicimgs.length(); j++) {
+                            Dynamicimg.add(Dynamicimgs.getJSONObject(j).getString("src"));
                         }
-                        JSONArray likeDatas = classDynamic.getJSONArray("dynamicUp");
-                        if (likeDatas.length() != 0) {
-                            List likeData = new ArrayList();
-                            for (int j = 0; j < likeDatas.length(); j++) {
-                                likeData.add(new LikeData(likeDatas.getJSONObject(j).getString("userName"), likeDatas.getJSONObject(j).getString("userAccount")));
-                            }
-                            contentData.setLikeData(likeData);
+                        contentData.setImages(Dynamicimg);
+                    }
+                    JSONArray likeDatas = classDynamic.getJSONArray("dynamicUp");
+                    if (likeDatas.length()!=0) {
+                        List likeData = new ArrayList();
+                        for (int j = 0; j < likeDatas.length(); j++) {
+                            likeData.add(new LikeData(likeDatas.getJSONObject(j).getString("userName"),likeDatas.getJSONObject(j).getString("userAccount")));
                         }
-                        JSONArray commitDatas = classDynamic.getJSONArray("commitment");
-                        if (commitDatas.length() != 0) {
-                            List comentData = new ArrayList();
-                            for (int j = 0; j < commitDatas.length(); j++) {
-                                JSONObject comment = commitDatas.getJSONObject(j);
-                                ComentData mComentData;
-                                if (comment.getString("comUserName").isEmpty()) {
-                                    mComentData = new ComentData(comment.getString("userName"), comment.getString("comText"), null);
-                                    mComentData.setComId(comment.getInt("comId"));
-                                    mComentData.setUserAccount(comment.getString("userAccount"));
-                                    comentData.add(mComentData);
-                                } else {
-                                    mComentData = new ComentData(comment.getString("userName"), comment.getString("comText"), comment.getString("comUserName"));
-                                    mComentData.setComId(comment.getInt("comId"));
-                                    mComentData.setUserAccount(comment.getString("userAccount"));
-                                    comentData.add(mComentData);
-                                }
+                        contentData.setLikeData(likeData);
+                    }
+                    JSONArray commitDatas = classDynamic.getJSONArray("commitment");
+                    if (commitDatas.length()!=0) {
+                        List comentData = new ArrayList();
+                        for (int j = 0; j < commitDatas.length(); j++) {
+                            JSONObject comment = commitDatas.getJSONObject(j);
+                            ComentData mComentData;
+                            if (comment.getString("comUserName").isEmpty()) {
+                                mComentData = new ComentData(comment.getString("userName"), comment.getString("comText"), null);
+                                mComentData.setComId(comment.getInt("comId"));
+                                mComentData.setUserAccount(comment.getString("userAccount"));
+                                comentData.add(mComentData);
+                            } else {
+                                mComentData = new ComentData(comment.getString("userName"), comment.getString("comText"), comment.getString("comUserName"));
+                                mComentData.setComId(comment.getInt("comId"));
+                                mComentData.setUserAccount(comment.getString("userAccount"));
+                                comentData.add(mComentData);
                             }
-                            contentData.setComentDatas(comentData);
                         }
+                        contentData.setComentDatas(comentData);
+                    }
+                    if (contentData.getUsername().equals(userData.getUserName())){
                         userData.getMyDatas().add(contentData);
                     }
                 }
@@ -351,13 +356,13 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
 
     @Override
     public void addLike(final int position) {
-        new Thread(new Runnable(){
+        mExecutorService.execute(new Runnable(){
             @Override
             public void run() {
                 PersonalCircleActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        String result = httpDynamic.addDynamicLike(userData.getMyDatas().get(position).getMegnumber(),userData.getUserAccount());
+                        String result = httpDynamic.addDynamicLike(userData.getClassDatas().get(position).getMegnumber(),userData.getUserAccount());
                         try {
                             JSONObject commentResult = new JSONObject(result);
                             if (!commentResult.getString("check").equals("classcircle-server")){
@@ -365,12 +370,12 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                             }else if (!commentResult.getString("error").isEmpty()){
                                 Toast.makeText(PersonalCircleActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
                             }else {
-                                if (userData.getMyDatas().get(position).getLikeData() == null) {
+                                if (userData.getClassDatas().get(position).getLikeData() == null) {
                                     List likeDatas = new ArrayList();
                                     likeDatas.add(new LikeData(userData.getUserName(),userData.getUserAccount()));
-                                    userData.getMyDatas().get(position).setLikeData(likeDatas);
+                                    userData.getClassDatas().get(position).setLikeData(likeDatas);
                                 } else {
-                                    userData.getMyDatas().get(position).getLikeData().add(new LikeData(userData.getUserName(),userData.getUserAccount()));
+                                    userData.getClassDatas().get(position).getLikeData().add(new LikeData(userData.getUserName(),userData.getUserAccount()));
                                 }
                                 adapter.notifyDataSetChanged();
                             }
@@ -380,18 +385,18 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                     }
                 });
             }
-        }).start();
+        });
     }
 
     @Override
     public void deleteLike(final int position) {
-        new Thread(new Runnable(){
+        mExecutorService.execute(new Runnable(){
             @Override
             public void run() {
                 PersonalCircleActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        String result = httpDynamic.deleteDynamicLike(userData.getMyDatas().get(position).getMegnumber(),userData.getUserAccount());
+                        String result = httpDynamic.deleteDynamicLike(userData.getClassDatas().get(position).getMegnumber(),userData.getUserAccount());
                         try {
                             JSONObject commentResult = new JSONObject(result);
                             if (!commentResult.getString("check").equals("classcircle-server")){
@@ -399,7 +404,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                             }else if (!commentResult.getString("error").isEmpty()){
                                 Toast.makeText(PersonalCircleActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
                             }else {
-                                List<LikeData> items = userData.getMyDatas().get(position).getLikeData();
+                                List<LikeData> items = userData.getClassDatas().get(position).getLikeData();
                                 for (int i = 0; i < items.size(); i++) {
                                     if (items.get(i).getUserAccount().equals(userData.getUserAccount())) {
                                         items.remove(i);
@@ -407,7 +412,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                                     }
                                 }
                                 if (items.size() == 0){
-                                    userData.getMyDatas().get(position).setLikeData(null);
+                                    userData.getClassDatas().get(position).setLikeData(null);
                                 }
                                 adapter.notifyDataSetChanged();
                             }
@@ -417,12 +422,12 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                     }
                 });
             }
-        }).start();
+        });
     }
 
     @Override
     public void deleteComment(final int position, final int comId) {
-        new Thread(new Runnable(){
+        mExecutorService.execute(new Runnable(){
             @Override
             public void run() {
                 PersonalCircleActivity.this.runOnUiThread(new Runnable() {
@@ -436,7 +441,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                             }else if (!commentResult.getString("error").isEmpty()){
                                 Toast.makeText(PersonalCircleActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
                             }else {
-                                List<ComentData> delete = userData.getMyDatas().get(position).getComentDatas();
+                                List<ComentData> delete = userData.getClassDatas().get(position).getComentDatas();
                                 for (int i = 0;i<delete.size();i++){
                                     if (delete.get(i).getComId() == comId){
                                         delete.remove(i);
@@ -451,11 +456,39 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                     }
                 });
             }
-        }).start();
+        });
+    }
+
+    @Override
+    public void deleteDynamic(final int position) {
+        mExecutorService.execute(new Runnable(){
+            @Override
+            public void run() {
+                PersonalCircleActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = httpDynamic.deleteDynamic(position);
+                        try {
+                            JSONObject commentResult = new JSONObject(result);
+                            if (!commentResult.getString("check").equals("classcircle-server")){
+                                Toast.makeText(PersonalCircleActivity.this,"网络传输故障，请稍候尝试",Toast.LENGTH_SHORT).show();
+                            }else if (!commentResult.getString("error").isEmpty()){
+                                Toast.makeText(PersonalCircleActivity.this,commentResult.getString("error"),Toast.LENGTH_SHORT).show();
+                            }else {
+                                loadDynamic();
+                                adapter.notifyDataSetChanged();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
     }
 
     public void addComment(final int dynamicId, final String userAccount, final String comText, final String comUserId){
-        new Thread(new Runnable(){
+        mExecutorService.execute(new Runnable(){
             @Override
             public void run() {
                 PersonalCircleActivity.this.runOnUiThread(new Runnable() {
@@ -477,7 +510,7 @@ public class PersonalCircleActivity extends SlidingFragmentActivity implements I
                     }
                 });
             }
-        }).start();
+        });
     }
 
     private int getStatusBarHeight() {
