@@ -89,10 +89,10 @@ public class CircleAdapter extends BaseRecycleViewAdapter {
             HeaderViewHolder holder = (HeaderViewHolder) viewHolder;
             holder.userName.setText(userData.getUserName());
             if (userData.getUserBG()!=null){
-                Glide.with(context).load("http://192.168.1.10:8080/ClassCircle/cover/"+ userData.getUserBG()).into(headView);
+                Glide.with(context).load("http://118.89.173.107:8080/ClassCircle/cover/"+ userData.getUserBG()).into(headView);
             }
             if (userData.getUserHeadBg()!=null){
-                Glide.with(context).load("http://192.168.1.10:8080/ClassCircle/head/"+ userData.getUserHeadBg()).into(bgView);
+                Glide.with(context).load("http://118.89.173.107:8080/ClassCircle/head/"+ userData.getUserHeadBg()).into(bgView);
             }
             if (TYPE_Activity == 0){
                 headView.setOnClickListener(new View.OnClickListener() {

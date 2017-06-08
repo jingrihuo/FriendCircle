@@ -29,7 +29,7 @@ import static com.example.a82173.friendcircle.activity.LoginActivity.userData;
  */
 
 public class HttpImage {
-    String sevlet = "http://192.168.1.10:8080/ClassCircle/clientservlet";
+    String sevlet = "http://118.89.173.107:8080/ClassCircle/clientservlet";
     public String uploadImgs(ArrayList<Bitmap> bitmaps){
         String result = "null";
         try {

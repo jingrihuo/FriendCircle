@@ -51,7 +51,7 @@ public class GridImageAdapter extends BaseAdapter {
     public View getView(final int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             ImageView imageView = new ImageView(context);
-            Glide.with(context).load("http://192.168.1.10:8080/ClassCircle/file/"+ data.get(position)).into(imageView);
+            Glide.with(context).load("http://118.89.173.107:8080/ClassCircle/file/"+ data.get(position)).into(imageView);
             imageView.setScaleType(ImageView.ScaleType.FIT_XY);
             imageView.setPadding(5, 5, 5, 5);
             ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(dip2px(context, 88), dip2px(context,88));
